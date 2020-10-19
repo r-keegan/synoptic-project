@@ -4,15 +4,14 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
-	"github.com/r-keegan/synoptic-project/Config"
-	"github.com/r-keegan/synoptic-project/Routes"
-
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	"github.com/r-keegan/synoptic-project/Config"
 	"github.com/r-keegan/synoptic-project/Models"
+	"github.com/r-keegan/synoptic-project/Routes"
 )
 
 func main() {
-	r := SetupRouter()
+	r := SetUpRouter()
 	r.Run()
 }
 
@@ -23,7 +22,7 @@ func SetupRouterWithSuppliedDB(db *gorm.DB) *gin.Engine {
 	return r
 }
 
-func SetupRouter() *gin.Engine {
+func SetUpRouter() *gin.Engine {
 	db := GetDatabase()
 	return SetupRouterWithSuppliedDB(db)
 }

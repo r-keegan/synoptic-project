@@ -13,6 +13,7 @@ func GetUsers(c *gin.Context) {
 
 	err := Services.GetAllUsers(&user)
 	if err != nil {
+		fmt.Println("Could not get all users: %")
 		c.AbortWithStatus(http.StatusNotFound)
 	} else {
 		c.JSON(http.StatusOK, user)
@@ -37,5 +38,15 @@ func CreateUserByUserModel(user Models.User) error {
 }
 
 func GetUserByID(c *gin.Context) {
+	var user Models.User
 
+	// gin framework finds the first JSON
+	// parameter labelled "id"
+	id := c.Params.ByName("id")
+	err := Services.GetUserByID(&user, id)
+	if err != nil {
+		c.AbortWithStatus(http.StatusNotFound)
+	} else {
+		c.JSON(http.StatusOK, user)
+	}
 }
