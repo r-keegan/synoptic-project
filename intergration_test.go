@@ -52,3 +52,27 @@ func TestGetUsers_WhenOneUser(t *testing.T) {
 	assert.Equal(t, 200, w.Code)
 	assert.Equal(t, "[{\"id\":1,\"employeeID\":3,\"name\":\"Max Power\",\"email\":\"max.power@gmail.com\",\"phone\":\"09716244907\",\"pin\":1234}]", w.Body.String())
 }
+
+func TestGetUsers_WhenMultipleUses(t *testing.T) {
+	user := Models.User{
+		ID:         1,
+		EmployeeID: 3,
+		Name:       "Max Power",
+		Email:      "max.power@gmail.com",
+		Phone:      "09716244907",
+		Pin:        1234,
+	}
+
+	Controllers.CreateUserByUserModel(user)
+
+	// change details to create a second user
+	user.ID = 2
+	user.EmployeeID = 7
+	user.Pin = 5432
+	Controllers.CreateUserByUserModel(user)
+
+	req, _ := http.NewRequest("GET", "/user", nil)
+	router.ServeHTTP(w, req)
+	assert.Equal(t, 200, w.Code)
+	assert.Equal(t, "[{\"id\":1,\"employeeID\":3,\"name\":\"Max Power\",\"email\":\"max.power@gmail.com\",\"phone\":\"09716244907\",\"pin\":1234},{\"id\":2,\"employeeID\":7,\"name\":\"Max Power\",\"email\":\"max.power@gmail.com\",\"phone\":\"09716244907\",\"pin\":5432}]", w.Body.String())
+}
