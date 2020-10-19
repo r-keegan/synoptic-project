@@ -7,6 +7,7 @@ type User struct {
 	Email      string `gorm:"size:100;not null" json:"email"`
 	Phone      string `gorm:"size:100;not null" json:"phone"`
 	Pin        int    `gorm:"size:4;not null" json:"pin"`
+	//Card       Card   `gorm:"embedded"`
 }
 
 func (b *User) TableName() string {
