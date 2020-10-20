@@ -32,24 +32,11 @@ func (s UserService) CreateUser(user Models.User) (err error) {
 //
 //}
 
-//func (s UserService) GetUserByID(userId string) (err error) {
-//	if err = s.DB.Where("id = ?", id).First(user).Error; err != nil {
-//		return err
-//	}
-//	return nil
-//}
-
 func (s UserService) Validate(user Models.User, action string) (err error) {
 	switch strings.ToLower(action) {
 	case "update":
 		if user.EmployeeID < 1 {
 			return errors.New("Required employeeID")
-		}
-		if user.CardID == "" {
-			return errors.New("Required cardID")
-		}
-		if !(len(user.CardID) == 16) {
-			return errors.New("Invalid cardID")
 		}
 		if user.Name == "" {
 			return errors.New("Required name")
@@ -62,6 +49,12 @@ func (s UserService) Validate(user Models.User, action string) (err error) {
 		}
 		if user.Phone == "" {
 			return errors.New("Required phone")
+		}
+		if !(len(user.Pin) == 4) {
+			return errors.New("Invalid pin")
+		}
+		if !(user.Pin == user.ConfirmPin) {
+			return errors.New("Pin does not match Confirmation Pin")
 		}
 	}
 	return nil

@@ -47,8 +47,7 @@ var _ = Describe("UserService", func() {
 
 		It("throws error when employeeID missing", func() {
 			invalidUser := Models.User{
-				CardID: "r7jTG7dqBy5wGO4L",
-				Name:   "Max Power",
+				Name: "Max Power",
 			}
 
 			err := userService.Validate(invalidUser, "update")
@@ -59,7 +58,6 @@ var _ = Describe("UserService", func() {
 		It("throws error when name missing", func() {
 			invalidUser := Models.User{
 				EmployeeID: 1,
-				CardID:     "r7jTG7dqBy5wGO4L",
 				Name:       "",
 			}
 
@@ -71,11 +69,10 @@ var _ = Describe("UserService", func() {
 		It("throws error when email missing", func() {
 			invalidUser := Models.User{
 				EmployeeID: 1,
-				CardID:     "r7jTG7dqBy5wGO4L",
 				Name:       "Max Power",
 				Email:      "",
 				Phone:      "09716244907",
-				Pin:        1234,
+				Pin:        "1234",
 			}
 
 			err := userService.Validate(invalidUser, "update")
@@ -86,16 +83,58 @@ var _ = Describe("UserService", func() {
 		It("throws error when email is invalid", func() {
 			invalidUser := Models.User{
 				EmployeeID: 1,
-				CardID:     "r7jTG7dqBy5wGO4L",
 				Name:       "Max Power",
 				Email:      "max.powergmail.com",
 				Phone:      "09716244907",
-				Pin:        1234,
+				Pin:        "1234",
 			}
 
 			err := userService.Validate(invalidUser, "update")
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(MatchError(ContainSubstring("Invalid email")))
+		})
+
+		It("throws error when phone is missing", func() {
+			invalidUser := Models.User{
+				EmployeeID: 1,
+				Name:       "Max Power",
+				Email:      "max.power@gmail.com",
+				Phone:      "",
+				Pin:        "1234",
+			}
+
+			err := userService.Validate(invalidUser, "update")
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError(ContainSubstring("Required phone")))
+		})
+
+		It("throws error when pin does not contain four numbers", func() {
+			invalidUser := Models.User{
+				EmployeeID: 1,
+				Name:       "Max Power",
+				Email:      "max.power@gmail.com",
+				Phone:      "09716244907",
+				Pin:        "06",
+			}
+
+			err := userService.Validate(invalidUser, "update")
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError(ContainSubstring("Invalid pin")))
+		})
+
+		It("throws error when pin does not match confirmation pin", func() {
+			invalidUser := Models.User{
+				EmployeeID: 1,
+				Name:       "Max Power",
+				Email:      "max.power@gmail.com",
+				Phone:      "09716244907",
+				Pin:        "1234",
+				ConfirmPin: "5432",
+			}
+
+			err := userService.Validate(invalidUser, "update")
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError(ContainSubstring("Pin does not match Confirmation Pin")))
 		})
 	})
 })
@@ -111,11 +150,11 @@ func GetDatabase() {
 func getUserOne() Models.User {
 	user := Models.User{
 		EmployeeID: 2,
-		CardID:     "r7jTG7dqBy5wGO4L",
 		Name:       "Max Power",
 		Email:      "max.power@gmail.com",
 		Phone:      "09716244907",
-		Pin:        1234,
+		Pin:        "1234",
+		ConfirmPin: "1234",
 	}
 	return user
 }
@@ -126,7 +165,7 @@ func getUserTwo() Models.User {
 		Name:       "Maxeen Power",
 		Email:      "maxeen.power@gmail.com",
 		Phone:      "09716244907",
-		Pin:        5432,
+		Pin:        "1234",
 	}
 	return user
 }

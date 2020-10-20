@@ -7,17 +7,10 @@ import (
 	"net/http"
 )
 
-//func GetUsers(c *gin.Context) {
-//	var user []Models.User
-//
-//	err := Services.GetAllUsers(&user)
-//	if err != nil {
-//		fmt.Println("Could not get all users: %")
-//		c.AbortWithStatus(http.StatusNotFound)
-//	} else {
-//		c.JSON(http.StatusOK, user)
-//	}
-//}
+type UserService interface {
+	CreateUser(Models.User) error
+}
+
 type UserController struct {
 	UserService Services.UserService
 }
@@ -26,7 +19,6 @@ func (s UserController) CreateUser(c *gin.Context) {
 	user := mapGinContextToUser(c)
 
 	err := s.UserService.CreateUser(user)
-
 	if err != nil {
 		c.AbortWithStatus(http.StatusInternalServerError)
 	} else {

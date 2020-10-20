@@ -1,13 +1,16 @@
 package Models
 
+// TODO generate 16 char length Card ID alphanumeric
 type User struct {
-	ID         uint32 `gorm:"primary_key;auto_increment" json:"id"`
+	ID         uint
 	EmployeeID int    `gorm:"size:10;not null;unique" json:"employeeID"`
-	Name       string `gorm:"size:255;not null" json:"name"`
-	Email      string `gorm:"size:100;not null" json:"email"`
-	Phone      string `gorm:"size:100;not null" json:"phone"`
-	Pin        int    `gorm:"size:4;not null" json:"pin"`
-	//Card       Card   `gorm:"embedded"`
+	CardID     string `gorm:"length:16;type:uuid;not null;unique" json:"cardID"`
+	Name       string
+	Email      string
+	Phone      string
+	Pin        string
+	ConfirmPin string
+	Balance    int
 }
 
 func (b *User) TableName() string {
