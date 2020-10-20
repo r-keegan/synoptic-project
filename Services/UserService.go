@@ -28,6 +28,18 @@ func (s UserService) CreateUser(user Models.User) (err error) {
 	return nil
 }
 
+func (s UserService) UpdateUser(user Models.User) (err error) {
+	err = s.Validate(user, "update")
+	if err != nil {
+		return err
+	}
+	err = s.UserRepository.UpdateUser(user)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 //func (s UserService) UpdateCardBalance(userId int, newBalance int) {
 //
 //}

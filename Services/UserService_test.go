@@ -50,7 +50,7 @@ var _ = Describe("UserService", func() {
 				Name: "Max Power",
 			}
 
-			err := userService.Validate(invalidUser, "update")
+			err := userService.CreateUser(invalidUser)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(MatchError(ContainSubstring("Required employeeID")))
 		})
@@ -61,7 +61,7 @@ var _ = Describe("UserService", func() {
 				Name:       "",
 			}
 
-			err := userService.Validate(invalidUser, "update")
+			err := userService.CreateUser(invalidUser)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(MatchError(ContainSubstring("Required name")))
 		})
@@ -133,6 +133,117 @@ var _ = Describe("UserService", func() {
 			}
 
 			err := userService.Validate(invalidUser, "update")
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError(ContainSubstring("Pin does not match Confirmation Pin")))
+		})
+	})
+
+	Context("Create User", func() {
+		It("successfully updates a user", func() {
+			user := getUserOne()
+			err := userService.CreateUser(user)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			user = Models.User{
+				EmployeeID: 2,
+				Name:       "Max Power",
+				Email:      "max.power@gmail.com",
+				Phone:      "09716244907",
+				Pin:        "5432",
+				ConfirmPin: "5432",
+			}
+			err = userService.UpdateUser(user)
+			Expect(err).ShouldNot(HaveOccurred())
+		})
+
+		It("throws error when employeeID missing", func() {
+			invalidUser := Models.User{
+				Name: "Max Power",
+			}
+
+			err := userService.UpdateUser(invalidUser)
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError(ContainSubstring("Required employeeID")))
+		})
+
+		It("throws error when name missing", func() {
+			invalidUser := Models.User{
+				EmployeeID: 1,
+				Name:       "",
+			}
+
+			err := userService.UpdateUser(invalidUser)
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError(ContainSubstring("Required name")))
+		})
+
+		It("throws error when email missing", func() {
+			invalidUser := Models.User{
+				EmployeeID: 1,
+				Name:       "Max Power",
+				Email:      "",
+				Phone:      "09716244907",
+				Pin:        "1234",
+			}
+
+			err := userService.UpdateUser(invalidUser)
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError(ContainSubstring("Required email")))
+		})
+
+		It("throws error when email is invalid", func() {
+			invalidUser := Models.User{
+				EmployeeID: 1,
+				Name:       "Max Power",
+				Email:      "max.powergmail.com",
+				Phone:      "09716244907",
+				Pin:        "1234",
+			}
+
+			err := userService.UpdateUser(invalidUser)
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError(ContainSubstring("Invalid email")))
+		})
+
+		It("throws error when phone is missing", func() {
+			invalidUser := Models.User{
+				EmployeeID: 1,
+				Name:       "Max Power",
+				Email:      "max.power@gmail.com",
+				Phone:      "",
+				Pin:        "1234",
+			}
+
+			err := userService.UpdateUser(invalidUser)
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError(ContainSubstring("Required phone")))
+		})
+
+		It("throws error when pin does not contain four numbers", func() {
+			invalidUser := Models.User{
+				EmployeeID: 1,
+				Name:       "Max Power",
+				Email:      "max.power@gmail.com",
+				Phone:      "09716244907",
+				Pin:        "06",
+			}
+
+			err := userService.UpdateUser(invalidUser)
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError(ContainSubstring("Invalid pin")))
+		})
+
+		It("throws error when pin does not match confirmation pin", func() {
+			invalidUser := Models.User{
+				EmployeeID: 1,
+				Name:       "Max Power",
+				Email:      "max.power@gmail.com",
+				Phone:      "09716244907",
+				Pin:        "1234",
+				ConfirmPin: "5432",
+			}
+
+			err := userService.UpdateUser(invalidUser)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(MatchError(ContainSubstring("Pin does not match Confirmation Pin")))
 		})

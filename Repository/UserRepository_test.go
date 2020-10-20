@@ -123,9 +123,135 @@ var _ = Describe("UserRepository", func() {
 		//})
 	})
 
-	Context("Get User By ID", func() {
-		It("gets a user by ID", func() {
+	Context("Get User", func() {
+		It("successfully gets a user by their unique employeeID", func() {
+			//Given I have a User
+			user := getUserOne()
 
+			// and I create a user
+			err := userRepository.CreateUser(user)
+			var foundUser Models.User
+
+			// I can find the user by their unique employee ID
+			foundUser, err = userRepository.GetUserByEmployeeID(2)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			compare(foundUser, user)
+		})
+
+		It("throws an error when it is unable to find their unique employee ID", func() {
+			// Given I have a User
+			user := Models.User{
+				EmployeeID: 78890,
+				CardID:     "r7jTG7dqBy5wGO4L",
+				Name:       "Max Power",
+				Email:      "max.power@gmail.com",
+				Phone:      "09716244907",
+				Pin:        "1234",
+				ConfirmPin: "1234",
+			}
+			// and I create a user
+			err := userRepository.CreateUser(user)
+
+			// I cannot find the user by their unique employee ID
+			_, err = userRepository.GetUserByEmployeeID(2)
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError(ContainSubstring("record not found")))
+		})
+
+		It("successfully gets a user by their unique cardID", func() {
+			//Given I have a User
+			user := getUserOne()
+
+			// and I create a user
+			err := userRepository.CreateUser(user)
+			var foundUser Models.User
+
+			// I can find the user by their unique employee ID
+			foundUser, err = userRepository.GetUserByCardID("r7jTG7dqBy5wGO4L")
+			Expect(err).ShouldNot(HaveOccurred())
+
+			compare(foundUser, user)
+		})
+
+		It("throws an error when it is unable to find their unique card ID", func() {
+			// Given I have a User
+			user := Models.User{
+				EmployeeID: 2,
+				CardID:     "r7jTG7dqBy5wGO4L",
+				Name:       "Max Power",
+				Email:      "max.power@gmail.com",
+				Phone:      "09716244907",
+				Pin:        "1234",
+				ConfirmPin: "1234",
+			}
+			// and I create a user
+			err := userRepository.CreateUser(user)
+
+			// I cannot find the user by their unique employee ID
+			_, err = userRepository.GetUserByCardID("")
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError(ContainSubstring("record not found")))
+		})
+	})
+
+	Context("Update user", func() {
+		It("successfully updates user information when pin changes", func() {
+			user := getUserOne()
+			err := userRepository.CreateUser(user)
+
+			user = Models.User{
+				EmployeeID: 2,
+				CardID:     "r7jTG7dqBy5wGO4L",
+				Name:       "Max Power",
+				Email:      "max.power@gmail.com",
+				Phone:      "09716244907",
+				Pin:        "7890",
+				ConfirmPin: "7890",
+			}
+			err = userRepository.UpdateUser(user)
+			Expect(err).ShouldNot(HaveOccurred())
+		})
+
+		It("successfully updates user information when cardID changes", func() {
+			user := getUserOne()
+			err := userRepository.CreateUser(user)
+
+			user = Models.User{
+				EmployeeID: 2,
+				CardID:     "ppp1G7dqBy5wGO4L",
+				Name:       "Max Power",
+				Email:      "max.power@gmail.com",
+				Phone:      "09716244907",
+				Pin:        "7890",
+				ConfirmPin: "7890",
+			}
+			err = userRepository.UpdateUser(user)
+			Expect(err).ShouldNot(HaveOccurred())
+		})
+	})
+
+	Context("Delete user", func() {
+		It("successfully deletes a user by their unique employeeID", func() {
+			user := getUserOne()
+			err := userRepository.CreateUser(user)
+			err = userRepository.DeleteUserByEmployeeID(2)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			_, err = userRepository.GetUserByEmployeeID(2)
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError(ContainSubstring("record not found")))
+		})
+
+		It("successfully deletes a user by their unique cardID", func() {
+			user := getUserTwo()
+			err := userRepository.CreateUser(user)
+			err = userRepository.DeleteUserByCardID("r7jTG7dqBy5wRK70")
+			Expect(err).ShouldNot(HaveOccurred())
+
+			_, err = userRepository.GetUserByEmployeeID(2)
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError(ContainSubstring("record not found")))
 		})
 	})
 })
