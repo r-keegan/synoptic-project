@@ -14,10 +14,10 @@ func SetupRouter() *gin.Engine {
 	userService := Services.UserService{UserRepository: userRepository}
 	membershipController := Controllers.MembershipController{UserService: userService}
 
-	r.GET("cardPresented/:id", membershipController.CardPresented)
-	r.GET("user/auth", membershipController.UserAuthenticate)
-	r.GET("Logout/:id", membershipController.LogOut)
-	r.POST("user", membershipController.CreateUser)
+	r.GET("cardPresented/:id", membershipController.CardPresented) // tested
+	r.GET("user/auth", membershipController.UserAuthenticate)      // tested
+	r.GET("logout/:id", membershipController.LogOut)               // tested
+	r.POST("user", membershipController.CreateUser)                // testes
 	//r.GET("user/:id", Controllers.GetUserByID)
 
 	return r

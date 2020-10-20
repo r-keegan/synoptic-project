@@ -43,7 +43,7 @@ func (c MembershipController) CreateUser(context *gin.Context) {
 	context.BindJSON(&createUser)
 	err := c.UserService.CreateUser(createUser)
 	if err != nil {
-		context.String(http.StatusOK, "Unable to create user")
+		context.String(http.StatusOK, fmt.Sprintf("Unable to create user: %v", err))
 	} else {
 		context.String(http.StatusOK, "User created")
 	}
@@ -63,7 +63,7 @@ func (c MembershipController) UserAuthenticate(context *gin.Context) {
 }
 
 func (c MembershipController) LogOut(context *gin.Context) {
-	//cardID := context.Params.ByName("id")
+	context.Params.ByName("id")
 	// TODO Invalidate session for card
 	// TODO If session is valid then say goodbye
 	context.String(http.StatusOK, "Goodbye")

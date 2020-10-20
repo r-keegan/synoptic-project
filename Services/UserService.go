@@ -77,7 +77,7 @@ func (s UserService) CreateUser(createUser Models.CreateUser) error {
 		EmployeeID: createUser.EmployeeID,
 		CardID:     createUser.CardID,
 		Name:       createUser.Name,
-		Email:      createUser.Phone,
+		Email:      createUser.Email,
 		Phone:      createUser.Phone,
 		Pin:        createUser.Pin,
 	}
