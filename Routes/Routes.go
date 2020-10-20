@@ -12,10 +12,12 @@ func SetupRouter() *gin.Engine {
 	r := gin.Default()
 	userRepository := Repository.UserRepository{DB: Config.DB}
 	userService := Services.UserService{UserRepository: userRepository}
-	userController := Controllers.UserController{UserService: userService}
-	// user routes
-	//r.GET("user", Controllers.GetUsers)
-	r.POST("user", userController.CreateUser)
+	membershipController := Controllers.MembershipController{UserService: userService}
+
+	r.GET("cardPresented/:id", membershipController.CardPresented)
+	r.GET("user/auth", membershipController.UserAuthenticate)
+	r.GET("Logout/:id", membershipController.LogOut)
+	r.POST("user", membershipController.CreateUser)
 	//r.GET("user/:id", Controllers.GetUserByID)
 
 	return r
