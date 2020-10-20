@@ -45,6 +45,7 @@ func (s UserService) UpdateUser(user Models.User) (err error) {
 //}
 
 func (s UserService) Validate(user Models.User, action string) (err error) {
+	//TODO perhaps throw a different exeption
 	switch strings.ToLower(action) {
 	case "update":
 		if user.EmployeeID < 1 {
