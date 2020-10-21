@@ -1,44 +1,135 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 	"github.com/r-keegan/synoptic-project/Models"
-	"gopkg.in/go-playground/assert.v1"
+	"github.com/r-keegan/synoptic-project/Repository"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
 var (
-	db     *gorm.DB
-	router *gin.Engine
-	w      *httptest.ResponseRecorder
+	db             *gorm.DB
+	router         *gin.Engine
+	w              *httptest.ResponseRecorder
+	userRepository Repository.UserRepository
 )
 
-func TestMain(m *testing.M) {
-	// setup server { database + router }
-	db = GetDatabase()
-	db.DropTableIfExists(&Models.User{})
-	router = SetupRouterWithSuppliedDB(db)
-	w = httptest.NewRecorder()
-
-	// runs tests
-	m.Run()
-	db.DropTableIfExists(&Models.User{})
-
+func TestServices(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Services Suite")
 }
 
-func TestGetUser_WhenNoUsers(t *testing.T) {
-	req, _ := http.NewRequest("GET", "/user", nil)
-	router.ServeHTTP(w, req)
+var _ = Describe("Intergration test", func() {
 
-	assert.Equal(t, 200, w.Code)
-	assert.Equal(t, "[]", w.Body.String())
-}
+	BeforeSuite(func() {
+		GetTestDatabase()
+		router = SetupRouterWithSuppliedDB(db)
+	})
 
+	BeforeEach(func() {
+		// setup database
+		db.DropTableIfExists(&Models.User{})
+		db.AutoMigrate(&Models.User{})
+
+		userRepository = Repository.UserRepository{DB: db}
+		userRepository.CreateUser(existingUser())
+		w = httptest.NewRecorder()
+
+	})
+
+	AfterEach(func() {
+		db.DropTableIfExists(&Models.User{})
+	})
+
+	Context("Create User", func() {
+		It("responds with 200 and successfully creates a user", func() {
+			requestBody := getUserOneRequestBody()
+			req, err := http.NewRequest("POST", "/user", strings.NewReader(requestBody))
+			router.ServeHTTP(w, req)
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(w.Code).To(Equal(200))
+			Expect(w.Body.String()).To(Equal("User created"))
+		})
+
+		It("responds with an error, unable to create user", func() {
+			requestBody := getUserOneRequestBody()
+			req, _ := http.NewRequest("POST", "/user", strings.NewReader(requestBody))
+			router.ServeHTTP(w, req)
+
+			requestBody2 := getUserOneRequestBody()
+			req, err := http.NewRequest("POST", "/user", strings.NewReader(requestBody2))
+			w2 := httptest.NewRecorder()
+			router.ServeHTTP(w2, req)
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(w2.Code).To(Equal(200))
+			Expect(w2.Body.String()).To(Equal("Unable to create user: UNIQUE constraint failed: user.card_id"))
+		})
+	})
+
+	Context("CardPresented", func() {
+		It("responds with 200 and displays welcome message", func() {
+			req, err := http.NewRequest("GET", fmt.Sprintf("/cardPresented/%s", existingUser().CardID), nil)
+			router.ServeHTTP(w, req)
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(w.Code).To(Equal(200))
+			Expect(w.Body.String()).To(Equal("Welcome Maxeen Power"))
+		})
+
+		It("responds with an error, unable to create user", func() {
+			req, err := http.NewRequest("GET", "/cardPresented/nocard", nil)
+			router.ServeHTTP(w, req)
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(w.Code).To(Equal(200))
+			Expect(w.Body.String()).To(Equal("Card needs to be registered"))
+		})
+	})
+
+	Context("UserAuthenticate", func() {
+		It("responds with 200 and informs user, log in successful", func() {
+			requestBody := fmt.Sprintf(`{"cardID":"%s","pin":"%s"}`, existingUser().CardID, existingUser().Pin)
+			req, err := http.NewRequest("GET", "/user/auth", strings.NewReader(requestBody))
+			router.ServeHTTP(w, req)
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(w.Code).To(Equal(200))
+			Expect(w.Body.String()).To(Equal("Log in successful"))
+		})
+
+		It("responds with an error, unable to create user", func() {
+			req, err := http.NewRequest("GET", "/cardPresented/nocard", nil)
+			router.ServeHTTP(w, req)
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(w.Code).To(Equal(200))
+			Expect(w.Body.String()).To(Equal("Card needs to be registered"))
+		})
+	})
+
+	Context("Logout", func() {
+
+	})
+})
+
+//func TestGetUser_WhenNoUsers(t *testing.T) {
+//	req, _ := http.NewRequest("GET", "/user", nil)
+//	router.ServeHTTP(w, req)
 //
+//	assert.Equal(t, 200, w.Code)
+//	assert.Equal(t, "[]", w.Body.String())
+//}
+
 //func TestGetUsers_WhenOneUser(t *testing.T) {
 //	//card := Models.Card{
 //	//	CardID:  "r7jTG7dqBy5wGO4L",
@@ -53,7 +144,7 @@ func TestGetUser_WhenNoUsers(t *testing.T) {
 //		Pin:        1234,
 //	}
 //
-//	Services.CreateUser(user)
+//	Services.UserRepository(user)
 //	req, _ := http.NewRequest("GET", "/user", nil)
 //	router.ServeHTTP(w, req)
 //
@@ -86,34 +177,54 @@ func TestGetUser_WhenNoUsers(t *testing.T) {
 //	assert.Equal(t, "[{\"id\":3,\"employeeID\":4,\"name\":\"Max Power\",\"email\":\"max.power@gmail.com\",\"phone\":\"09716244907\",\"pin\":1234},{\"id\":5,\"employeeID\":6,\"name\":\"Max Power\",\"email\":\"max.power@gmail.com\",\"phone\":\"09716244907\",\"pin\":5432}]", w.Body.String())
 //}
 
-//
-//func TestCreateUser(t *testing.T) {
-//	requestBody := fmt.Sprintf(
-//		`{"employeeId":5,
-//				"name":"Maximum Power",
-//				"email":"maximum.power@gmail.com",
-//				"phone":"0777000000",
-//				"pin":1234
-//				}`)
-//	req, _ := http.NewRequest("POST", "/user", strings.NewReader(requestBody))
-//	router.ServeHTTP(w, req)
-//	assert.Equal(t, 200, w.Code)
-//	assert.Equal(t, "[][{\"id\":9,\"employeeID\":5,\"name\":\"Maximum Power\",\"email\":\"maximum.power@gmail.com\",\"phone\":\"0777000000\",\"pin\":1234}]", w.Body.String())
+//func TestCreateUser_whenThatUserAlreadyExists(t *testing.T) {
+
 //}
-//
+
 //func TestGetUserByID(t *testing.T) {
-//	//user := Models.User{
-//	//	ID:         7,
-//	//	EmployeeID: 8,
-//	//	Name:       "Maxeen Power",
-//	//	Email:      "maxeen.power@gmail.com",
-//	//	Phone:      "0900111222",
-//	//	Pin:        1234,
-//	//}
-//	//
-//	//Controllers.CreateUserByUserModel(user)
-//	req, _ := http.NewRequest("GET", "/user/1", nil)
+//	// given I have a user
+//	user := newUser()
+//	repository.CreateUser(user)
+//	//when `i get
+//
+//	req, _ := http.NewRequest("GET", "/user/r7jTG7dqBy5wGO4L", nil)
 //	router.ServeHTTP(w, req)
 //	assert.Equal(t, 200, w.Code)
-//	assert.Equal(t, "{\"id\":1,\"employeeID\":2,\"name\":\"Max Power\",\"email\":\"max.power@gmail.com\",\"phone\":\"09716244907\",\"pin\":1234}", w.Body.String())
+//	assert.Equal(t, "", w.Body.String())
 //}
+
+func getUserOneRequestBody() (requestBody string) {
+	return `{"employeeID":90,"cardID":"111222bbb","name":"Paul R","email":"paul.harris1@gmail.com","phone":"0799007","pin":"1234","balance":0}`
+}
+
+func GetTestDatabase() {
+	var err error
+	db, err = gorm.Open("sqlite3", "IntegrationTest.db")
+	if err != nil {
+		fmt.Println("Failed to connect to database: ", err)
+	}
+}
+
+func newUser() Models.User {
+	user := Models.User{
+		EmployeeID: 2,
+		CardID:     "r7jTG7dqBy5wGO4L",
+		Name:       "Max Power",
+		Email:      "max.power@gmail.com",
+		Phone:      "09716244907",
+		Pin:        "1234",
+	}
+	return user
+}
+
+func existingUser() Models.User {
+	user := Models.User{
+		EmployeeID: 4,
+		CardID:     "B7jTG7dqBy5wRK70",
+		Name:       "Maxeen Power",
+		Email:      "maxeen.power@gmail.com",
+		Phone:      "09716244907",
+		Pin:        "5432",
+	}
+	return user
+}

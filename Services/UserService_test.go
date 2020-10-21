@@ -34,7 +34,7 @@ var _ = Describe("UserService", func() {
 	})
 
 	AfterEach(func() {
-		//db.DropTableIfExists(&Models.User{})
+		db.DropTableIfExists(&Models.User{})
 	})
 
 	Context("Create User", func() {
@@ -121,29 +121,15 @@ var _ = Describe("UserService", func() {
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(MatchError(ContainSubstring("Invalid pin")))
 		})
-
-		It("throws error when pin does not match confirmation pin", func() {
-			invalidUser := Models.User{
-				EmployeeID: 1,
-				Name:       "Max Power",
-				Email:      "max.power@gmail.com",
-				Phone:      "09716244907",
-				Pin:        "1234",
-			}
-
-			err := userService.Validate(invalidUser, "update")
-			Expect(err).To(HaveOccurred())
-			Expect(err).To(MatchError(ContainSubstring("Pin does not match Confirmation Pin")))
-		})
 	})
 
-	Context("Create User", func() {
+	Context("Update User", func() {
 		It("successfully updates a user", func() {
 			user := getUserOne()
 			err := userService.CreateUser(user)
 			Expect(err).ShouldNot(HaveOccurred())
 
-			user = Models.User{
+			user2 := Models.User{
 				EmployeeID: 2,
 				CardID:     "123",
 				Name:       "Max Power",
@@ -152,7 +138,7 @@ var _ = Describe("UserService", func() {
 				Pin:        "5432",
 				Balance:    0,
 			}
-			err = userService.UpdateUser(user)
+			err = userService.UpdateUser(user2)
 			Expect(err).ShouldNot(HaveOccurred())
 		})
 
@@ -231,20 +217,6 @@ var _ = Describe("UserService", func() {
 			err := userService.UpdateUser(invalidUser)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(MatchError(ContainSubstring("Invalid pin")))
-		})
-
-		It("throws error when pin does not match confirmation pin", func() {
-			invalidUser := Models.User{
-				EmployeeID: 1,
-				Name:       "Max Power",
-				Email:      "max.power@gmail.com",
-				Phone:      "09716244907",
-				Pin:        "1234",
-			}
-
-			err := userService.UpdateUser(invalidUser)
-			Expect(err).To(HaveOccurred())
-			Expect(err).To(MatchError(ContainSubstring("Pin does not match Confirmation Pin")))
 		})
 	})
 })
