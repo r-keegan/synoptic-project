@@ -23,21 +23,6 @@ func (c MembershipController) CardPresented(context *gin.Context) {
 	}
 }
 
-//func (c MembershipController) CreateUser(context *gin.Context) {
-//	user := mapGinContextToUser(context)
-//	err := c.UserService.CreateUser(user)
-//	if err != nil {
-//		context.AbortWithStatus(http.StatusInternalServerError)
-//	} else {
-//		context.JSON(http.StatusOK, user)
-//	}
-//}
-//func mapGinContextToUser(c *gin.Context) Models.User {
-//	var user Models.User
-//	c.BindJSON(&user)
-//	return user
-//}
-
 func (c MembershipController) CreateUser(context *gin.Context) {
 	var createUser Models.CreateUser
 	context.BindJSON(&createUser)
@@ -51,9 +36,9 @@ func (c MembershipController) CreateUser(context *gin.Context) {
 
 // TODO store logged-in somewhere eg: session
 func (c MembershipController) UserAuthenticate(context *gin.Context) {
-	var userAuth Models.UserAuth
-	context.BindJSON(&userAuth)
-	authenticationResult := c.UserService.Authenticate(userAuth)
+	var authRequest Models.AuthenticatedRequest
+	context.BindJSON(&authRequest)
+	authenticationResult := c.UserService.Authenticate(authRequest)
 
 	if authenticationResult {
 		context.String(http.StatusOK, "Log in successful")
@@ -67,6 +52,39 @@ func (c MembershipController) LogOut(context *gin.Context) {
 	// TODO Invalidate session for card
 	// TODO If session is valid then say goodbye
 	context.String(http.StatusOK, "Goodbye")
+}
+
+func (c MembershipController) GetBalance(context *gin.Context) {
+	var authRequest Models.AuthenticatedRequest
+	context.BindJSON(&authRequest)
+	balance, err := c.UserService.GetBalance(authRequest.CardID, authRequest.Pin)
+	if err == nil {
+		context.String(http.StatusOK, fmt.Sprintf("Your balance is: %v", balance))
+	} else {
+		context.String(http.StatusOK, fmt.Sprintf("Unable to provide balance"))
+	}
+}
+
+func (c MembershipController) Purchase(context *gin.Context) {
+	var purchaseRequest Models.PurchaseRequest
+	context.BindJSON(&purchaseRequest)
+	balance, err := c.UserService.Purchase(purchaseRequest.CardID, purchaseRequest.Pin, purchaseRequest.Amount)
+	if err == nil {
+		context.String(http.StatusOK, fmt.Sprintf("Your balance is: %v", balance))
+	} else {
+		context.String(http.StatusOK, fmt.Sprintf("Unable to make purchase: your balance is %v", balance))
+	}
+}
+
+func (c MembershipController) TopUp(context *gin.Context) {
+	var topUpRequest Models.TopUpRequest
+	context.BindJSON(&topUpRequest)
+	balance, err := c.UserService.TopUp(topUpRequest.CardID, topUpRequest.Pin, topUpRequest.Amount)
+	if err == nil {
+		context.String(http.StatusOK, fmt.Sprintf("Your balance is: %v", balance))
+	} else {
+		context.String(http.StatusOK, fmt.Sprintf("Unable to topup: your balance is %v", balance))
+	}
 }
 
 //func GetUserByID(c *gin.Context) {

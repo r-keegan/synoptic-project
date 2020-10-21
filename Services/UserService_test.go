@@ -46,7 +46,7 @@ var _ = Describe("UserService", func() {
 		})
 
 		It("throws error when employeeID missing", func() {
-			invalidUser := Models.User{
+			invalidUser := Models.CreateUser{
 				Name: "Max Power",
 			}
 
@@ -56,7 +56,7 @@ var _ = Describe("UserService", func() {
 		})
 
 		It("throws error when name missing", func() {
-			invalidUser := Models.User{
+			invalidUser := Models.CreateUser{
 				EmployeeID: 1,
 				Name:       "",
 			}
@@ -129,7 +129,6 @@ var _ = Describe("UserService", func() {
 				Email:      "max.power@gmail.com",
 				Phone:      "09716244907",
 				Pin:        "1234",
-				ConfirmPin: "5432",
 			}
 
 			err := userService.Validate(invalidUser, "update")
@@ -146,11 +145,12 @@ var _ = Describe("UserService", func() {
 
 			user = Models.User{
 				EmployeeID: 2,
+				CardID:     "123",
 				Name:       "Max Power",
 				Email:      "max.power@gmail.com",
 				Phone:      "09716244907",
 				Pin:        "5432",
-				ConfirmPin: "5432",
+				Balance:    0,
 			}
 			err = userService.UpdateUser(user)
 			Expect(err).ShouldNot(HaveOccurred())
@@ -240,7 +240,6 @@ var _ = Describe("UserService", func() {
 				Email:      "max.power@gmail.com",
 				Phone:      "09716244907",
 				Pin:        "1234",
-				ConfirmPin: "5432",
 			}
 
 			err := userService.UpdateUser(invalidUser)
@@ -258,14 +257,14 @@ func GetDatabase() {
 	}
 }
 
-func getUserOne() Models.User {
-	user := Models.User{
+func getUserOne() Models.CreateUser {
+	user := Models.CreateUser{
 		EmployeeID: 2,
 		Name:       "Max Power",
+		CardID:     "r7jTG7dqBy5wGO4L",
 		Email:      "max.power@gmail.com",
 		Phone:      "09716244907",
 		Pin:        "1234",
-		ConfirmPin: "1234",
 	}
 	return user
 }
@@ -277,6 +276,7 @@ func getUserTwo() Models.User {
 		Email:      "maxeen.power@gmail.com",
 		Phone:      "09716244907",
 		Pin:        "1234",
+		Balance:    0,
 	}
 	return user
 }

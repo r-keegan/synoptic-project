@@ -38,13 +38,6 @@ func (r UserRepository) UpdateUser(user Models.User) (err error) {
 	return nil
 }
 
-//func (r UserRepository) UpdateCardBalance(cardID string, newBalance int) (err error) {
-//	if err = r.DB.Where("card_id = ?", cardID).First(&user).Error; err != nil {
-//		return , err
-//	}
-//	return , nil
-//}
-
 func (r UserRepository) DeleteUserByEmployeeID(employeeID int) (err error) {
 	//we should look into the need for this user declaration, does it actually contain a user in it once its deleted
 	var user Models.User

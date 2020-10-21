@@ -17,8 +17,10 @@ func SetupRouter() *gin.Engine {
 	r.GET("cardPresented/:id", membershipController.CardPresented) // tested
 	r.GET("user/auth", membershipController.UserAuthenticate)      // tested
 	r.GET("logout/:id", membershipController.LogOut)               // tested
-	r.POST("user", membershipController.CreateUser)                // testes
-	//r.GET("user/:id", Controllers.GetUserByID)
+	r.POST("user", membershipController.CreateUser)                // tested
+	r.GET("balance", membershipController.GetBalance)              // tested
+	r.GET("purchase", membershipController.Purchase)               // tested
+	r.GET("topup", membershipController.TopUp)                     // tested
 
 	return r
 }

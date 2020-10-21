@@ -84,7 +84,6 @@ var _ = Describe("UserRepository", func() {
 				Email:      "max.power@gmail.com",
 				Phone:      "09716244907",
 				Pin:        "1234",
-				ConfirmPin: "1234",
 			}
 			err1 := userRepository.CreateUser(user1)
 			err2 := userRepository.CreateUser(user2)
@@ -148,7 +147,6 @@ var _ = Describe("UserRepository", func() {
 				Email:      "max.power@gmail.com",
 				Phone:      "09716244907",
 				Pin:        "1234",
-				ConfirmPin: "1234",
 			}
 			// and I create a user
 			err := userRepository.CreateUser(user)
@@ -183,7 +181,6 @@ var _ = Describe("UserRepository", func() {
 				Email:      "max.power@gmail.com",
 				Phone:      "09716244907",
 				Pin:        "1234",
-				ConfirmPin: "1234",
 			}
 			// and I create a user
 			err := userRepository.CreateUser(user)
@@ -207,7 +204,6 @@ var _ = Describe("UserRepository", func() {
 				Email:      "max.power@gmail.com",
 				Phone:      "09716244907",
 				Pin:        "7890",
-				ConfirmPin: "7890",
 			}
 			err = userRepository.UpdateUser(user)
 			Expect(err).ShouldNot(HaveOccurred())
@@ -224,7 +220,6 @@ var _ = Describe("UserRepository", func() {
 				Email:      "max.power@gmail.com",
 				Phone:      "09716244907",
 				Pin:        "7890",
-				ConfirmPin: "7890",
 			}
 			err = userRepository.UpdateUser(user)
 			Expect(err).ShouldNot(HaveOccurred())
@@ -272,7 +267,6 @@ func getUserOne() Models.User {
 		Email:      "max.power@gmail.com",
 		Phone:      "09716244907",
 		Pin:        "1234",
-		ConfirmPin: "1234",
 	}
 	return user
 }
@@ -285,7 +279,6 @@ func getUserTwo() Models.User {
 		Email:      "maxeen.power@gmail.com",
 		Phone:      "09716244907",
 		Pin:        "5432",
-		ConfirmPin: "5432",
 	}
 	return user
 }

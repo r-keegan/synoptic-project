@@ -1,6 +1,7 @@
 package Models
 
-type UserAuth struct {
+type PurchaseRequest struct {
 	CardID string
 	Pin    string
+	Amount int
 }

@@ -2,6 +2,7 @@ package Services
 
 import (
 	"errors"
+	"fmt"
 	"github.com/badoux/checkmail"
 	"github.com/r-keegan/synoptic-project/Models"
 	"github.com/r-keegan/synoptic-project/Repository"
@@ -28,12 +29,8 @@ func (s UserService) UpdateUser(user Models.User) (err error) {
 	return nil
 }
 
-//func (s UserService) UpdateCardBalance(userId int, newBalance int) {
-//
-//}
-
 func (s UserService) Validate(user Models.User, action string) (err error) {
-	//TODO perhaps throw a different exeption
+	//TODO perhaps throw a different exception
 	switch strings.ToLower(action) {
 	case "update":
 		if user.EmployeeID < 1 {
@@ -62,14 +59,58 @@ func (s UserService) GetEmployeeByCardID(cardID string) (Models.User, error) {
 	return s.UserRepository.GetUserByCardID(cardID)
 }
 
-func (s UserService) Authenticate(userAuth Models.UserAuth) bool {
-	user, err := s.GetEmployeeByCardID(userAuth.CardID)
+func (s UserService) Authenticate(userAuth Models.AuthenticatedRequest) bool {
+	_, err := s.getAUserByCardAndPin(userAuth.CardID, userAuth.Pin)
 	if err == nil {
-		if user.Pin == userAuth.Pin {
-			return true
-		}
+		return true
 	}
 	return false
+}
+
+func (s UserService) GetBalance(cardID string, pin string) (int, error) {
+	user, err := s.getAUserByCardAndPin(cardID, pin)
+	if err == nil {
+		return user.Balance, nil
+	}
+	return 0, err
+}
+
+func (s UserService) Purchase(cardID string, pin string, amount int) (int, error) {
+	user, err := s.getAUserByCardAndPin(cardID, pin)
+	if err == nil {
+		potentialBalance := user.Balance - amount
+		if potentialBalance > 0 {
+			user.Balance = potentialBalance
+			err = s.UpdateUser(user)
+			if err == nil {
+				return user.Balance, nil
+			}
+		}
+	}
+	return user.Balance, errors.New(fmt.Sprintf("Unable to make purchase: your balance is %v", user.Balance))
+}
+
+func (s UserService) TopUp(cardID string, pin string, amount int) (int, error) {
+	user, err := s.getAUserByCardAndPin(cardID, pin)
+	if err == nil {
+		user.Balance = user.Balance + amount
+		err = s.UpdateUser(user)
+		if err == nil {
+			return user.Balance, nil
+		}
+	}
+	return user.Balance, errors.New(fmt.Sprintf("Unable to topup: your balance is %v", user.Balance))
+}
+
+//todo make private
+func (s UserService) getAUserByCardAndPin(cardID string, pin string) (Models.User, error) {
+	user, err := s.GetEmployeeByCardID(cardID)
+	if err == nil {
+		if user.Pin == pin {
+			return user, nil
+		}
+	}
+	return user, err
 }
 
 func (s UserService) CreateUser(createUser Models.CreateUser) error {
@@ -80,6 +121,7 @@ func (s UserService) CreateUser(createUser Models.CreateUser) error {
 		Email:      createUser.Email,
 		Phone:      createUser.Phone,
 		Pin:        createUser.Pin,
+		Balance:    0,
 	}
 	return s.CreateUser2(user)
 }
