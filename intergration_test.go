@@ -86,13 +86,24 @@ var _ = Describe("Intergration test", func() {
 			Expect(w.Body.String()).To(Equal("Welcome Maxeen Power"))
 		})
 
-		It("responds with an error, unable to create user", func() {
+		It("responds with an error, unable to register card", func() {
 			req, err := http.NewRequest("GET", "/cardPresented/nocard", nil)
 			router.ServeHTTP(w, req)
 
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(w.Code).To(Equal(200))
 			Expect(w.Body.String()).To(Equal("Card needs to be registered"))
+		})
+	})
+
+	Context("LogOut", func() {
+		It("user logs out and displays goodbye message", func() {
+			req, err := http.NewRequest("GET", fmt.Sprintf("/logout/%s", existingUser().CardID), nil)
+			router.ServeHTTP(w, req)
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(w.Code).To(Equal(200))
+			Expect(w.Body.String()).To(Equal("Goodbye"))
 		})
 	})
 
@@ -107,18 +118,83 @@ var _ = Describe("Intergration test", func() {
 			Expect(w.Body.String()).To(Equal("Log in successful"))
 		})
 
-		It("responds with an error, unable to create user", func() {
-			req, err := http.NewRequest("GET", "/cardPresented/nocard", nil)
+		It("responds with an error, informs user log in was unsuccessful", func() {
+			requestBody := `{"cardID":"mystery-card","pin":"mystery-pin"}`
+			req, err := http.NewRequest("GET", "/user/auth", strings.NewReader(requestBody))
 			router.ServeHTTP(w, req)
 
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(w.Code).To(Equal(200))
-			Expect(w.Body.String()).To(Equal("Card needs to be registered"))
+			Expect(w.Body.String()).To(Equal("Log in failed"))
 		})
 	})
 
-	Context("Logout", func() {
+	Context("GetBalance", func() {
+		It("responds with 200 and informs user of their balance", func() {
+			requestBody := fmt.Sprintf(`{"cardID":"%s","pin":"%s"}`, existingUser().CardID, existingUser().Pin)
+			req, err := http.NewRequest("GET", "/balance", strings.NewReader(requestBody))
+			router.ServeHTTP(w, req)
 
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(w.Code).To(Equal(200))
+			Expect(w.Body.String()).To(Equal(fmt.Sprintf("Your balance is: %v", existingUser().Balance)))
+		})
+
+		It("responds with an error, user unable to see balance", func() {
+			requestBody := `{"cardID":"mystery-card","pin":"mystery-pin"}`
+			req, err := http.NewRequest("GET", "/balance", strings.NewReader(requestBody))
+			router.ServeHTTP(w, req)
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(w.Code).To(Equal(200))
+			Expect(w.Body.String()).To(Equal("Unable to provide balance"))
+		})
+	})
+
+	Context("Topup", func() {
+		It("responds with 200 when user tops up and informs user of their balance", func() {
+			// existing user already has a balance of 100
+			requestBody := fmt.Sprintf(`{"cardID":"%s","pin":"%s", "amount":100}`, existingUser().CardID, existingUser().Pin)
+			req, err := http.NewRequest("GET", "/topup", strings.NewReader(requestBody))
+			router.ServeHTTP(w, req)
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(w.Code).To(Equal(200))
+			Expect(w.Body.String()).To(Equal("Your balance is: 200"))
+		})
+
+		It("responds with an error, when unable to topup", func() {
+			nonExistantCardID := existingUser().CardID
+			requestBody := fmt.Sprintf(`{"cardID":"%s","pin":"%s", "amount":1}`, nonExistantCardID, existingUser().Pin+"2")
+			req, err := http.NewRequest("GET", "/topup", strings.NewReader(requestBody))
+			router.ServeHTTP(w, req)
+
+			Expect(err).ToNot(HaveOccurred())
+			Expect(w.Code).To(Equal(200))
+			Expect(w.Body.String()).To(Equal("Unable to topup"))
+		})
+	})
+
+	Context("Purchase", func() {
+		It("responds with 200 and informs user of their balance", func() {
+			requestBody := fmt.Sprintf(`{"cardID":"%s","pin":"%s", "amount":100}`, existingUser().CardID, existingUser().Pin)
+			req, err := http.NewRequest("GET", "/purchase", strings.NewReader(requestBody))
+			router.ServeHTTP(w, req)
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(w.Code).To(Equal(200))
+			Expect(w.Body.String()).To(Equal("Your balance is: 0"))
+		})
+
+		It("responds with an error, when purchase is greater than their existing balance", func() {
+			requestBody := fmt.Sprintf(`{"cardID":"%s","pin":"%s", "amount":100000}`, existingUser().CardID, existingUser().Pin)
+			req, err := http.NewRequest("GET", "/purchase", strings.NewReader(requestBody))
+			router.ServeHTTP(w, req)
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(w.Code).To(Equal(200))
+			Expect(w.Body.String()).To(Equal("Unable to make purchase"))
+		})
 	})
 })
 
@@ -225,6 +301,7 @@ func existingUser() Models.User {
 		Email:      "maxeen.power@gmail.com",
 		Phone:      "09716244907",
 		Pin:        "5432",
+		Balance:    100,
 	}
 	return user
 }

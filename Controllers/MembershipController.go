@@ -12,6 +12,8 @@ type MembershipController struct {
 	UserService Services.UserService
 }
 
+var sessions map[string]bool = make(map[string]bool)
+
 func (c MembershipController) CardPresented(context *gin.Context) {
 	cardID := context.Params.ByName("id")
 
@@ -41,6 +43,8 @@ func (c MembershipController) UserAuthenticate(context *gin.Context) {
 	authenticationResult := c.UserService.Authenticate(authRequest)
 
 	if authenticationResult {
+		//c.sessionsAsString = append(c.sessionsAsString, authRequest.CardID)
+		sessions[authRequest.CardID] = true
 		context.String(http.StatusOK, "Log in successful")
 	} else {
 		context.String(http.StatusOK, "Log in failed")
@@ -48,10 +52,15 @@ func (c MembershipController) UserAuthenticate(context *gin.Context) {
 }
 
 func (c MembershipController) LogOut(context *gin.Context) {
-	context.Params.ByName("id")
+	cardId := context.Params.ByName("id")
 	// TODO Invalidate session for card
-	// TODO If session is valid then say goodbye
-	context.String(http.StatusOK, "Goodbye")
+	//todo create a test that tries to logout using a cardid that has never logged in
+	if sessions[cardId] {
+		sessions[cardId] = false
+		context.String(http.StatusOK, "Goodbye")
+	} else {
+		context.String(http.StatusOK, "User does not have a session")
+	}
 }
 
 func (c MembershipController) GetBalance(context *gin.Context) {
@@ -72,7 +81,7 @@ func (c MembershipController) Purchase(context *gin.Context) {
 	if err == nil {
 		context.String(http.StatusOK, fmt.Sprintf("Your balance is: %v", balance))
 	} else {
-		context.String(http.StatusOK, fmt.Sprintf("Unable to make purchase: your balance is %v", balance))
+		context.String(http.StatusOK, fmt.Sprintf("Unable to make purchase"))
 	}
 }
 
@@ -83,7 +92,7 @@ func (c MembershipController) TopUp(context *gin.Context) {
 	if err == nil {
 		context.String(http.StatusOK, fmt.Sprintf("Your balance is: %v", balance))
 	} else {
-		context.String(http.StatusOK, fmt.Sprintf("Unable to topup: your balance is %v", balance))
+		context.String(http.StatusOK, fmt.Sprintf("Unable to topup"))
 	}
 }
 

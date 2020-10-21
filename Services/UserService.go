@@ -79,7 +79,7 @@ func (s UserService) Purchase(cardID string, pin string, amount int) (int, error
 	user, err := s.getAUserByCardAndPin(cardID, pin)
 	if err == nil {
 		potentialBalance := user.Balance - amount
-		if potentialBalance > 0 {
+		if potentialBalance >= 0 {
 			user.Balance = potentialBalance
 			err = s.UpdateUser(user)
 			if err == nil {
@@ -109,6 +109,7 @@ func (s UserService) getAUserByCardAndPin(cardID string, pin string) (Models.Use
 		if user.Pin == pin {
 			return user, nil
 		}
+		err = errors.New("user and pin mismatch")
 	}
 	return user, err
 }
