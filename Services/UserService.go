@@ -7,7 +7,6 @@ import (
 	"github.com/r-keegan/synoptic-project/Models"
 	"github.com/r-keegan/synoptic-project/Repository"
 	"regexp"
-	"strings"
 )
 
 type UserService struct {
@@ -15,7 +14,7 @@ type UserService struct {
 }
 
 func (s UserService) UpdateUser(user Models.User) (err error) {
-	err = s.validate(user, "update")
+	err = s.validate(user)
 	if err != nil {
 		return err
 	}
@@ -92,7 +91,7 @@ func (s UserService) findAUserByCardAndPin(cardID string, pin string) (Models.Us
 
 func (s UserService) CreateUser(createUser Models.CreateUser) error {
 	user := s.mapCreateUserToUser(createUser)
-	err := s.validate(user, "update")
+	err := s.validate(user)
 	if err != nil {
 		return err
 	}
@@ -103,38 +102,35 @@ func (s UserService) CreateUser(createUser Models.CreateUser) error {
 	return nil
 }
 
-func (s UserService) validate(user Models.User, action string) (err error) {
+func (s UserService) validate(user Models.User) (err error) {
 	// validation for 16 character alphanumeric string
 	cardIDValidationRegex, _ := regexp.Compile("^\\w{16}")
 	//Validation for 4 digit string
 	pinValidationRegex, _ := regexp.Compile("^\\d{4}")
-	//TODO remove update case as its the only case
-	switch strings.ToLower(action) {
-	case "update":
-		if user.EmployeeID < 1 {
-			return errors.New("Required employeeID")
-		}
-		if user.Name == "" {
-			return errors.New("Required name")
-		}
-		if user.Email == "" {
-			return errors.New("Required email")
-		}
-		if err := checkmail.ValidateFormat(user.Email); err != nil {
-			return errors.New("Invalid email")
-		}
-		if user.Phone == "" {
-			return errors.New("Required phone")
-		}
-		if !pinValidationRegex.MatchString(user.Pin) {
-			return errors.New("Invalid pin")
-		}
-		if user.Balance < 0 {
-			return errors.New("Insufficient funds")
-		}
-		if !cardIDValidationRegex.MatchString(user.CardID) {
-			return errors.New("Invalid cardID")
-		}
+
+	if user.EmployeeID < 1 {
+		return errors.New("Required employeeID")
+	}
+	if user.Name == "" {
+		return errors.New("Required name")
+	}
+	if user.Email == "" {
+		return errors.New("Required email")
+	}
+	if err := checkmail.ValidateFormat(user.Email); err != nil {
+		return errors.New("Invalid email")
+	}
+	if user.Phone == "" {
+		return errors.New("Required phone")
+	}
+	if !pinValidationRegex.MatchString(user.Pin) {
+		return errors.New("Invalid pin")
+	}
+	if user.Balance < 0 {
+		return errors.New("Insufficient funds")
+	}
+	if !cardIDValidationRegex.MatchString(user.CardID) {
+		return errors.New("Invalid cardID")
 	}
 	return nil
 }

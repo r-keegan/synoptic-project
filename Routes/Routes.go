@@ -16,7 +16,6 @@ func SetupRouter() *gin.Engine {
 	sessionService := Session.SessionService{MaxSessionLengthInSeconds: Config.MaxSessionLengthInSeconds}
 	membershipController := Controllers.MembershipController{UserService: userService, SessionService: sessionService}
 
-	//TODO request Type
 	r.GET("cardPresented/:id", membershipController.CardPresented) // tested
 	r.GET("user/auth", membershipController.UserAuthenticate)      // tested
 	r.GET("logout/:id", membershipController.LogOut)               // tested

@@ -19,7 +19,7 @@ func (c MembershipController) CardPresented(context *gin.Context) {
 
 	user, err := c.UserService.GetEmployeeByCardID(cardID)
 	if err != nil {
-		context.String(http.StatusOK, "Card needs to be registered")
+		context.String(http.StatusNotFound, "Card needs to be registered")
 	} else {
 		context.String(http.StatusOK, fmt.Sprintf("Welcome %s", user.Name))
 	}
@@ -30,7 +30,7 @@ func (c MembershipController) CreateUser(context *gin.Context) {
 	_ = context.BindJSON(&createUser)
 	err := c.UserService.CreateUser(createUser)
 	if err != nil {
-		context.String(http.StatusOK, fmt.Sprintf("Unable to create user: %v", err))
+		context.String(http.StatusBadRequest, fmt.Sprintf("Unable to create user: %v", err))
 	} else {
 		context.String(http.StatusOK, "User created")
 	}
@@ -45,7 +45,7 @@ func (c MembershipController) UserAuthenticate(context *gin.Context) {
 		c.SessionService.CreateSession(authRequest.CardID)
 		context.String(http.StatusOK, "Log in successful")
 	} else {
-		context.String(http.StatusOK, "Log in failed")
+		context.String(http.StatusNotFound, "Log in failed")
 	}
 }
 
@@ -55,7 +55,7 @@ func (c MembershipController) LogOut(context *gin.Context) {
 		c.SessionService.DestroySession(cardId)
 		context.String(http.StatusOK, "Goodbye")
 	} else {
-		context.String(http.StatusOK, "User does not have a session")
+		context.String(http.StatusNotFound, "User does not have a session")
 	}
 }
 
@@ -66,7 +66,7 @@ func (c MembershipController) GetBalance(context *gin.Context) {
 	if err == nil {
 		context.String(http.StatusOK, fmt.Sprintf("Your balance is: %v", balance))
 	} else {
-		context.String(http.StatusOK, fmt.Sprintf("Unable to provide balance"))
+		context.String(http.StatusBadRequest, fmt.Sprintf("Unable to provide balance"))
 	}
 }
 
@@ -77,7 +77,7 @@ func (c MembershipController) Purchase(context *gin.Context) {
 	if err == nil {
 		context.String(http.StatusOK, fmt.Sprintf("Your balance is: %v", balance))
 	} else {
-		context.String(http.StatusOK, fmt.Sprintf("Unable to make purchase"))
+		context.String(http.StatusBadRequest, fmt.Sprintf("Unable to make purchase"))
 	}
 }
 
@@ -88,6 +88,6 @@ func (c MembershipController) TopUp(context *gin.Context) {
 	if err == nil {
 		context.String(http.StatusOK, fmt.Sprintf("Your balance is: %v", balance))
 	} else {
-		context.String(http.StatusOK, fmt.Sprintf("Unable to topup"))
+		context.String(http.StatusBadRequest, fmt.Sprintf("Unable to topup"))
 	}
 }

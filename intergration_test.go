@@ -76,7 +76,7 @@ var _ = Describe("Integration test", func() {
 			router.ServeHTTP(w2, req)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(w2.Code).To(Equal(200))
+			Expect(w2.Code).To(Equal(400))
 			Expect(w2.Body.String()).To(Equal("Unable to create user: UNIQUE constraint failed: user.card_id"))
 		})
 	})
@@ -98,7 +98,7 @@ var _ = Describe("Integration test", func() {
 			router.ServeHTTP(w, req)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(w.Code).To(Equal(200))
+			Expect(w.Code).To(Equal(404))
 			Expect(w.Body.String()).To(Equal("Card needs to be registered"))
 		})
 	})
@@ -129,7 +129,7 @@ var _ = Describe("Integration test", func() {
 			router.ServeHTTP(w2, req)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(w2.Code).To(Equal(200))
+			Expect(w2.Code).To(Equal(404))
 			Expect(w2.Body.String()).To(Equal("User does not have a session"))
 		})
 
@@ -138,7 +138,7 @@ var _ = Describe("Integration test", func() {
 			router.ServeHTTP(w, req)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(w.Code).To(Equal(200))
+			Expect(w.Code).To(Equal(404))
 			Expect(w.Body.String()).To(Equal("User does not have a session"))
 		})
 	})
@@ -160,7 +160,7 @@ var _ = Describe("Integration test", func() {
 			router.ServeHTTP(w, req)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(w.Code).To(Equal(200))
+			Expect(w.Code).To(Equal(404))
 			Expect(w.Body.String()).To(Equal("Log in failed"))
 		})
 	})
@@ -182,7 +182,7 @@ var _ = Describe("Integration test", func() {
 			router.ServeHTTP(w, req)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(w.Code).To(Equal(200))
+			Expect(w.Code).To(Equal(400))
 			Expect(w.Body.String()).To(Equal("Unable to provide balance"))
 		})
 	})
@@ -207,7 +207,7 @@ var _ = Describe("Integration test", func() {
 			router.ServeHTTP(w, req)
 
 			Expect(err).ToNot(HaveOccurred())
-			Expect(w.Code).To(Equal(200))
+			Expect(w.Code).To(Equal(400))
 			Expect(w.Body.String()).To(Equal("Unable to topup"))
 		})
 	})
@@ -229,7 +229,7 @@ var _ = Describe("Integration test", func() {
 			router.ServeHTTP(w, req)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			Expect(w.Code).To(Equal(200))
+			Expect(w.Code).To(Equal(400))
 			Expect(w.Body.String()).To(Equal("Unable to make purchase"))
 		})
 	})
