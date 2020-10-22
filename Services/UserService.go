@@ -68,15 +68,15 @@ func (s UserService) GetEmployeeByCardID(cardID string) (Models.User, error) {
 }
 
 func (s UserService) Authenticate(userAuth Models.AuthenticatedRequest) bool {
-	_, err := s.getAUserByCardAndPin(userAuth.CardID, userAuth.Pin)
+	_, err := s.findAUserByCardAndPin(userAuth.CardID, userAuth.Pin)
 	if err == nil {
 		return true
 	}
 	return false
 }
 
-func (s UserService) GetBalance(cardID string, pin string) (int, error) {
-	user, err := s.getAUserByCardAndPin(cardID, pin)
+func (s UserService) Balance(cardID string, pin string) (int, error) {
+	user, err := s.findAUserByCardAndPin(cardID, pin)
 	if err == nil {
 		return user.Balance, nil
 	}
@@ -87,7 +87,7 @@ func (s UserService) Purchase(cardID string, pin string, amount int) (int, error
 	if amount < 0 {
 		return 0, errors.New("Purchase Amount is not valid")
 	}
-	user, err := s.getAUserByCardAndPin(cardID, pin)
+	user, err := s.findAUserByCardAndPin(cardID, pin)
 	if err == nil {
 		potentialBalance := user.Balance - amount
 		if potentialBalance >= 0 {
@@ -102,10 +102,10 @@ func (s UserService) Purchase(cardID string, pin string, amount int) (int, error
 }
 
 func (s UserService) TopUp(cardID string, pin string, amount int) (int, error) {
-	if amount < 0 {
+	if amount <= 0 {
 		return 0, errors.New("TopUp Amount is not valid")
 	}
-	user, err := s.getAUserByCardAndPin(cardID, pin)
+	user, err := s.findAUserByCardAndPin(cardID, pin)
 	if err == nil {
 		user.Balance = user.Balance + amount
 		err = s.UpdateUser(user)
@@ -116,8 +116,7 @@ func (s UserService) TopUp(cardID string, pin string, amount int) (int, error) {
 	return user.Balance, errors.New(fmt.Sprintf("Unable to topup: your balance is %v", user.Balance))
 }
 
-//todo make private
-func (s UserService) getAUserByCardAndPin(cardID string, pin string) (Models.User, error) {
+func (s UserService) findAUserByCardAndPin(cardID string, pin string) (Models.User, error) {
 	user, err := s.GetEmployeeByCardID(cardID)
 	if err == nil {
 		if user.Pin == pin {
@@ -129,6 +128,19 @@ func (s UserService) getAUserByCardAndPin(cardID string, pin string) (Models.Use
 }
 
 func (s UserService) CreateUser(createUser Models.CreateUser) error {
+	user := s.mapCreateUserToUser(createUser)
+	err := s.Validate(user, "update")
+	if err != nil {
+		return err
+	}
+	err = s.UserRepository.CreateUser(user)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s UserService) mapCreateUserToUser(createUser Models.CreateUser) Models.User {
 	user := Models.User{
 		EmployeeID: createUser.EmployeeID,
 		CardID:     createUser.CardID,
@@ -138,17 +150,5 @@ func (s UserService) CreateUser(createUser Models.CreateUser) error {
 		Pin:        createUser.Pin,
 		Balance:    0,
 	}
-	return s.CreateUser2(user)
-}
-
-func (s UserService) CreateUser2(user Models.User) (err error) {
-	err = s.Validate(user, "update")
-	if err != nil {
-		return err
-	}
-	err = s.UserRepository.CreateUser(user)
-	if err != nil {
-		return err
-	}
-	return nil
+	return user
 }

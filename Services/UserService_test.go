@@ -31,6 +31,7 @@ var _ = Describe("UserService", func() {
 		// set up user service
 		userRepository = Repository.UserRepository{DB: db}
 		userService = UserService{UserRepository: userRepository}
+		userRepository.CreateUser(existingUserWithAPositiveBalance())
 	})
 
 	AfterEach(func() {
@@ -218,6 +219,191 @@ var _ = Describe("UserService", func() {
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(MatchError(ContainSubstring("Invalid pin")))
 		})
+
+		It("throws error when balance tries to fall below zero", func() {
+			invalidUser := Models.User{
+				EmployeeID: 1,
+				Name:       "Max Power",
+				Email:      "max.power@gmail.com",
+				Phone:      "09716244907",
+				Pin:        "0634",
+				Balance:    -30,
+			}
+
+			err := userService.UpdateUser(invalidUser)
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError(ContainSubstring("Insufficient funds")))
+		})
+	})
+
+	Context("Get employee by cardID", func() {
+		It("gets a user by cardID", func() {
+			user := getUserOne()
+			err := userService.CreateUser(user)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			actualUser, err := userService.GetEmployeeByCardID(user.CardID)
+
+			Expect(err).ShouldNot(HaveOccurred())
+			compareCreateUsertoUser(user, actualUser)
+		})
+	})
+
+	Context("Authenticate", func() {
+		It("returns true if user is successfully authenticated", func() {
+			user := getUserOne()
+			err := userService.CreateUser(user)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			userToAuth := Models.AuthenticatedRequest{
+				CardID: "17jTG7dqBy5wGO4L",
+				Pin:    "1234",
+			}
+
+			actualResult := userService.Authenticate(userToAuth)
+			Expect(actualResult).To(BeTrue())
+		})
+
+		It("returns false if user fails to be authenticated", func() {
+			user := getUserOne()
+			err := userService.CreateUser(user)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			userToAuth := Models.AuthenticatedRequest{
+				CardID: "17jTG7dqBy5wGO4L",
+				Pin:    "1",
+			}
+
+			actualResult := userService.Authenticate(userToAuth)
+			Expect(actualResult).To(BeFalse())
+		})
+	})
+
+	Context("Balance", func() {
+		It("returns the balance", func() {
+			user := existingUserWithAPositiveBalance()
+
+			actualResult, err := userService.Balance(user.CardID, user.Pin)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(user.Balance).To(Equal(actualResult))
+		})
+
+		It("returns error if user pin incorrect", func() {
+			existingUserWithAPositiveBalance()
+
+			userToAuth := Models.AuthenticatedRequest{
+				CardID: "moneymoneymoney1",
+				Pin:    "1",
+			}
+
+			_, err := userService.Balance(userToAuth.CardID, userToAuth.Pin)
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError(ContainSubstring("user and pin mismatch")))
+		})
+
+		It("returns error if balance is unable to be obtained", func() {
+			user := getUserOne()
+			err := userService.CreateUser(user)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			user2 := Models.User{
+				EmployeeID: 2,
+				CardID:     "123",
+				Name:       "Max Power",
+				Email:      "max.power@gmail.com",
+				Phone:      "09716244907",
+				Pin:        "5432",
+				Balance:    0,
+			}
+			err = userService.UpdateUser(user2)
+
+			_, err2 := userService.Balance(user2.CardID, user2.Pin)
+			Expect(err2).To(HaveOccurred())
+		})
+	})
+
+	Context("Purchase", func() {
+		It("successfully purchases an item and returns new balance", func() {
+			user := existingUserWithAPositiveBalance()
+
+			balance, err := userService.Purchase(user.CardID, user.Pin, 50)
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(balance).To(Equal(999999950))
+		})
+
+		It("returns error if user pin incorrect", func() {
+			existingUserWithAPositiveBalance()
+
+			purchaseRequest := Models.PurchaseRequest{
+				CardID: "moneymoneymoney1",
+				Pin:    "1",
+			}
+
+			_, err := userService.Purchase(purchaseRequest.CardID, purchaseRequest.Pin, 50)
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError(ContainSubstring("Unable to make purchase")))
+		})
+
+		It("returns error if purchase price is greater than balance", func() {
+			user := existingUserWithAPositiveBalance()
+
+			_, err := userService.Purchase(user.CardID, user.Pin, 100000000000)
+
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError(ContainSubstring("Unable to make purchase")))
+		})
+
+		It("returns error if purchase price is a negative number", func() {
+			user := existingUserWithAPositiveBalance()
+
+			_, err := userService.Purchase(user.CardID, user.Pin, -30)
+
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError(ContainSubstring("Purchase Amount is not valid")))
+		})
+	})
+
+	Context("Topup", func() {
+		It("successfully allows top up and returns new balance", func() {
+			user := existingUserWithAPositiveBalance()
+
+			balance, err := userService.TopUp(user.CardID, user.Pin, 50)
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(balance).To(Equal(1000000050))
+		})
+
+		It("returns error if user pin incorrect", func() {
+			existingUserWithAPositiveBalance()
+
+			purchaseRequest := Models.TopUpRequest{
+				CardID: "moneymoneymoney1",
+				Pin:    "1",
+			}
+
+			_, err := userService.TopUp(purchaseRequest.CardID, purchaseRequest.Pin, 50)
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError(ContainSubstring("Unable to topup")))
+		})
+
+		It("returns error if top up amount is a negative number", func() {
+			user := existingUserWithAPositiveBalance()
+
+			_, err := userService.TopUp(user.CardID, user.Pin, -30)
+
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError(ContainSubstring("TopUp Amount is not valid")))
+		})
+
+		It("returns error if top up amount is zero", func() {
+			user := existingUserWithAPositiveBalance()
+
+			_, err := userService.TopUp(user.CardID, user.Pin, 0)
+
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError(ContainSubstring("TopUp Amount is not valid")))
+		})
 	})
 })
 
@@ -241,6 +427,19 @@ func getUserOne() Models.CreateUser {
 	return user
 }
 
+func existingUserWithAPositiveBalance() Models.User {
+	user := Models.User{
+		EmployeeID: 1,
+		Name:       "Richie Rich",
+		CardID:     "moneymoneymoney1",
+		Email:      "richierich@example.com",
+		Phone:      "09716244907",
+		Pin:        "4321",
+		Balance:    1000000000,
+	}
+	return user
+}
+
 func getUserTwo() Models.User {
 	user := Models.User{
 		EmployeeID: 4,
@@ -254,7 +453,14 @@ func getUserTwo() Models.User {
 	return user
 }
 
-func compare(expectedUser Models.User, actualUser Models.User) {
+func compareUsertoUser(expectedUser Models.User, actualUser Models.User) {
+	Expect(actualUser.EmployeeID).To(Equal(expectedUser.EmployeeID))
+	Expect(actualUser.Name).To(Equal(expectedUser.Name))
+	Expect(actualUser.Phone).To(Equal(expectedUser.Phone))
+	Expect(actualUser.Pin).To(Equal(expectedUser.Pin))
+}
+
+func compareCreateUsertoUser(expectedUser Models.CreateUser, actualUser Models.User) {
 	Expect(actualUser.EmployeeID).To(Equal(expectedUser.EmployeeID))
 	Expect(actualUser.Name).To(Equal(expectedUser.Name))
 	Expect(actualUser.Phone).To(Equal(expectedUser.Phone))
