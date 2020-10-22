@@ -24,7 +24,7 @@ func (s UserService) UpdateUser(user Models.User) (err error) {
 	}
 	err = s.UserRepository.UpdateUser(user)
 	if err != nil {
-		return err
+		return errors.New("Could not find user")
 	}
 	return nil
 }
