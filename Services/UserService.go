@@ -31,8 +31,13 @@ func (s UserService) UpdateUser(user Models.User) (err error) {
 
 func (s UserService) Validate(user Models.User, action string) (err error) {
 	//TODO perhaps throw a different exception
+	//r, _ := regexp.Compile("^\\w{16}")
+
 	switch strings.ToLower(action) {
 	case "update":
+		//if !r.MatchString(user.CardID) {
+		//	return errors.New("Invalid cardID")
+		//}
 		if user.EmployeeID < 1 {
 			return errors.New("Required employeeID")
 		}
@@ -50,6 +55,9 @@ func (s UserService) Validate(user Models.User, action string) (err error) {
 		}
 		if !(len(user.Pin) == 4) {
 			return errors.New("Invalid pin")
+		}
+		if user.Balance < 0 {
+			return errors.New("Insufficient funds")
 		}
 	}
 	return nil
@@ -76,6 +84,9 @@ func (s UserService) GetBalance(cardID string, pin string) (int, error) {
 }
 
 func (s UserService) Purchase(cardID string, pin string, amount int) (int, error) {
+	if amount < 0 {
+		return 0, errors.New("Purchase Amount is not valid")
+	}
 	user, err := s.getAUserByCardAndPin(cardID, pin)
 	if err == nil {
 		potentialBalance := user.Balance - amount
@@ -91,6 +102,9 @@ func (s UserService) Purchase(cardID string, pin string, amount int) (int, error
 }
 
 func (s UserService) TopUp(cardID string, pin string, amount int) (int, error) {
+	if amount < 0 {
+		return 0, errors.New("TopUp Amount is not valid")
+	}
 	user, err := s.getAUserByCardAndPin(cardID, pin)
 	if err == nil {
 		user.Balance = user.Balance + amount

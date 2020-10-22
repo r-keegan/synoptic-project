@@ -97,13 +97,27 @@ var _ = Describe("Intergration test", func() {
 	})
 
 	Context("LogOut", func() {
-		It("user logs out and displays goodbye message", func() {
+		It("user successfully logs out", func() {
+			requestBody := fmt.Sprintf(`{"cardID":"%s","pin":"%s"}`, existingUser().CardID, existingUser().Pin)
+			req, err := http.NewRequest("GET", "/user/auth", strings.NewReader(requestBody))
+			router.ServeHTTP(w, req)
+
+			req, err = http.NewRequest("GET", fmt.Sprintf("/logout/%s", existingUser().CardID), nil)
+			w2 := httptest.NewRecorder()
+			router.ServeHTTP(w2, req)
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(w2.Code).To(Equal(200))
+			Expect(w2.Body.String()).To(Equal("Goodbye"))
+		})
+
+		It("user attempts to logs out when they do not have a session", func() {
 			req, err := http.NewRequest("GET", fmt.Sprintf("/logout/%s", existingUser().CardID), nil)
 			router.ServeHTTP(w, req)
 
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(w.Code).To(Equal(200))
-			Expect(w.Body.String()).To(Equal("Goodbye"))
+			Expect(w.Body.String()).To(Equal("User does not have a session"))
 		})
 	})
 
@@ -270,7 +284,7 @@ var _ = Describe("Intergration test", func() {
 //}
 
 func getUserOneRequestBody() (requestBody string) {
-	return `{"employeeID":90,"cardID":"111222bbb","name":"Paul R","email":"paul.harris1@gmail.com","phone":"0799007","pin":"1234","balance":0}`
+	return `{"employeeID":90,"cardID":"2111TG7dqBy5wGO4","name":"Paul R","email":"paul.harris1@gmail.com","phone":"0799007","pin":"1234","balance":0}`
 }
 
 func GetTestDatabase() {

@@ -233,7 +233,7 @@ func getUserOne() Models.CreateUser {
 	user := Models.CreateUser{
 		EmployeeID: 2,
 		Name:       "Max Power",
-		CardID:     "r7jTG7dqBy5wGO4L",
+		CardID:     "17jTG7dqBy5wGO4L",
 		Email:      "max.power@gmail.com",
 		Phone:      "09716244907",
 		Pin:        "1234",
@@ -245,6 +245,7 @@ func getUserTwo() Models.User {
 	user := Models.User{
 		EmployeeID: 4,
 		Name:       "Maxeen Power",
+		CardID:     "27jTG7dqBy5wGO4L",
 		Email:      "maxeen.power@gmail.com",
 		Phone:      "09716244907",
 		Pin:        "1234",
