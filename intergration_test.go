@@ -27,7 +27,6 @@ func TestServices(t *testing.T) {
 	RunSpecs(t, "Services Suite")
 }
 
-//goland:noinspection ALL
 var _ = Describe("Integration test", func() {
 
 	BeforeSuite(func() {
@@ -84,12 +83,12 @@ var _ = Describe("Integration test", func() {
 
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(w.Code).To(Equal(200))
-			//goland:noinspection SpellCheckingInspection
+
 			Expect(w.Body.String()).To(Equal("Welcome Maxeen Power"))
 		})
 
-		It("responds with an error, unable to register card", func() {
-			//goland:noinspection SpellCheckingInspection
+		It("responds with an error, need to register card", func() {
+
 			req, err := http.NewRequest("GET", "/cardPresented/nocard", nil)
 			router.ServeHTTP(w, req)
 
@@ -114,7 +113,7 @@ var _ = Describe("Integration test", func() {
 			Expect(w2.Body.String()).To(Equal("Goodbye"))
 		})
 
-		It("user attempts to logs out when they do not have a session", func() {
+		It("user attempts to log out when they do not have a session", func() {
 			req, err := http.NewRequest("GET", fmt.Sprintf("/logout/%s", existingUser().CardID), nil)
 			router.ServeHTTP(w, req)
 
@@ -215,77 +214,6 @@ var _ = Describe("Integration test", func() {
 		})
 	})
 })
-
-//func TestGetUser_WhenNoUsers(t *testing.T) {
-//	req, _ := http.NewRequest("GET", "/user", nil)
-//	router.ServeHTTP(w, req)
-//
-//	assert.Equal(t, 200, w.Code)
-//	assert.Equal(t, "[]", w.Body.String())
-//}
-
-//func TestGetUsers_WhenOneUser(t *testing.T) {
-//	//card := Models.Card{
-//	//	CardID:  "r7jTG7dqBy5wGO4L",
-//	//	Balance: 100,
-//	//}
-//	user := Models.User{
-//		ID:         1,
-//		EmployeeID: 2,
-//		Name:       "Max Power",
-//		Email:      "max.power@gmail.com",
-//		Phone:      "09716244907",
-//		Pin:        1234,
-//	}
-//
-//	Services.UserRepository(user)
-//	req, _ := http.NewRequest("GET", "/user", nil)
-//	router.ServeHTTP(w, req)
-//
-//	assert.Equal(t, 200, w.Code)
-//	assert.Equal(t, "[{\"id\":1,\"employeeID\":2,\"name\":\"Max Power\",\"email\":\"max.power@gmail.com\",\"phone\":\"09716244907\",\"pin\":1234}]", w.Body.String())
-//}
-
-//
-//func TestGetUsers_WhenMultipleUses(t *testing.T) {
-//	user := Models.User{
-//		ID:         3,
-//		EmployeeID: 4,
-//		Name:       "Max Power",
-//		Email:      "max.power@gmail.com",
-//		Phone:      "09716244907",
-//		Pin:        1234,
-//	}
-//
-//	Controllers.CreateUserByUserModel(user)
-//
-//	// change details to create a second user
-//	user.ID = 5
-//	user.EmployeeID = 6
-//	user.Pin = 5432
-//	Controllers.CreateUserByUserModel(user)
-//
-//	req, _ := http.NewRequest("GET", "/user", nil)
-//	router.ServeHTTP(w, req)
-//	assert.Equal(t, 200, w.Code)
-//	assert.Equal(t, "[{\"id\":3,\"employeeID\":4,\"name\":\"Max Power\",\"email\":\"max.power@gmail.com\",\"phone\":\"09716244907\",\"pin\":1234},{\"id\":5,\"employeeID\":6,\"name\":\"Max Power\",\"email\":\"max.power@gmail.com\",\"phone\":\"09716244907\",\"pin\":5432}]", w.Body.String())
-//}
-
-//func TestCreateUser_whenThatUserAlreadyExists(t *testing.T) {
-
-//}
-
-//func TestGetUserByID(t *testing.T) {
-//	// given I have a user
-//	user := newUser()
-//	repository.CreateUser(user)
-//	//when `i get
-//
-//	req, _ := http.NewRequest("GET", "/user/r7jTG7dqBy5wGO4L", nil)
-//	router.ServeHTTP(w, req)
-//	assert.Equal(t, 200, w.Code)
-//	assert.Equal(t, "", w.Body.String())
-//}
 
 func getUserOneRequestBody() (requestBody string) {
 	return `{"employeeID":90,"cardID":"2111TG7dqBy5wGO4","name":"Paul R","email":"paul.harris1@gmail.com","phone":"0799007","pin":"1234","balance":0}`

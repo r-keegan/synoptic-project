@@ -75,7 +75,7 @@ var _ = Describe("UserRepository", func() {
 			Expect(foundUsers).To(HaveLen(2))
 		})
 
-		It("throws an error when it employeeID already exists", func() {
+		It("throws an error when an employeeID already exists", func() {
 			user1 := getUserOne()
 			user2 := Models.User{
 				EmployeeID: 2,
@@ -93,7 +93,7 @@ var _ = Describe("UserRepository", func() {
 			Expect(err2).To(MatchError(ContainSubstring("UNIQUE constraint failed: user.employee_id")))
 		})
 
-		It("throws an error when it cardID already exists", func() {
+		It("throws an error when cardID already exists", func() {
 			user1 := getUserOne()
 			user2 := getUserOne()
 			err1 := userRepository.CreateUser(user1)
@@ -165,6 +165,7 @@ var _ = Describe("UserRepository", func() {
 				Phone:      "09716244907",
 				Pin:        "1234",
 			}
+
 			// and I create a user
 			err := userRepository.CreateUser(user)
 

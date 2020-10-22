@@ -93,16 +93,3 @@ func (c MembershipController) TopUp(context *gin.Context) {
 		context.String(http.StatusOK, fmt.Sprintf("Unable to topup"))
 	}
 }
-
-//func GetUserByID(c *gin.Context) {
-//	var user Models.User
-//
-//	// gin framework finds the first JSON parameter labelled "id"
-//	id := c.Params.ByName("id")
-//	err := Services.GetUserByID(&user, id)
-//	if err != nil {
-//		c.AbortWithStatus(http.StatusNotFound)
-//	} else {
-//		c.JSON(http.StatusOK, user)
-//	}
-//}

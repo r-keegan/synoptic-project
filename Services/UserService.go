@@ -10,58 +10,18 @@ import (
 	"strings"
 )
 
-type UserRepository interface {
-	CreateUser(Models.User) error
-}
-
 type UserService struct {
 	UserRepository Repository.UserRepository
 }
 
 func (s UserService) UpdateUser(user Models.User) (err error) {
-	err = s.Validate(user, "update")
+	err = s.validate(user, "update")
 	if err != nil {
 		return err
 	}
 	err = s.UserRepository.UpdateUser(user)
 	if err != nil {
 		return errors.New("Could not find user")
-	}
-	return nil
-}
-
-func (s UserService) Validate(user Models.User, action string) (err error) {
-	// validation for 16 character alphanumeric string
-	cardIDValidationRegex, _ := regexp.Compile("^\\w{16}")
-	//Validation for 4 digits
-	pinValidationRegex, _ := regexp.Compile("^\\d{4}")
-
-	switch strings.ToLower(action) {
-	case "update":
-		if user.EmployeeID < 1 {
-			return errors.New("Required employeeID")
-		}
-		if user.Name == "" {
-			return errors.New("Required name")
-		}
-		if user.Email == "" {
-			return errors.New("Required email")
-		}
-		if err := checkmail.ValidateFormat(user.Email); err != nil {
-			return errors.New("Invalid email")
-		}
-		if user.Phone == "" {
-			return errors.New("Required phone")
-		}
-		if !pinValidationRegex.MatchString((user.Pin)) {
-			return errors.New("Invalid pin")
-		}
-		if user.Balance < 0 {
-			return errors.New("Insufficient funds")
-		}
-		if !cardIDValidationRegex.MatchString(user.CardID) {
-			return errors.New("Invalid cardID")
-		}
 	}
 	return nil
 }
@@ -101,7 +61,7 @@ func (s UserService) Purchase(cardID string, pin string, amount int) (int, error
 			}
 		}
 	}
-	return user.Balance, errors.New(fmt.Sprintf("Unable to make purchase: your balance is %v", user.Balance))
+	return user.Balance, errors.New(fmt.Sprintf("Unable to make purchase"))
 }
 
 func (s UserService) TopUp(cardID string, pin string, amount int) (int, error) {
@@ -116,8 +76,7 @@ func (s UserService) TopUp(cardID string, pin string, amount int) (int, error) {
 			return user.Balance, nil
 		}
 	}
-	//goland:noinspection GoNilness
-	return user.Balance, errors.New(fmt.Sprintf("Unable to topup: your balance is %v", user.Balance))
+	return user.Balance, errors.New(fmt.Sprintf("Unable to topup"))
 }
 
 func (s UserService) findAUserByCardAndPin(cardID string, pin string) (Models.User, error) {
@@ -133,7 +92,7 @@ func (s UserService) findAUserByCardAndPin(cardID string, pin string) (Models.Us
 
 func (s UserService) CreateUser(createUser Models.CreateUser) error {
 	user := s.mapCreateUserToUser(createUser)
-	err := s.Validate(user, "update")
+	err := s.validate(user, "update")
 	if err != nil {
 		return err
 	}
@@ -144,6 +103,41 @@ func (s UserService) CreateUser(createUser Models.CreateUser) error {
 	return nil
 }
 
+func (s UserService) validate(user Models.User, action string) (err error) {
+	// validation for 16 character alphanumeric string
+	cardIDValidationRegex, _ := regexp.Compile("^\\w{16}")
+	//Validation for 4 digit string
+	pinValidationRegex, _ := regexp.Compile("^\\d{4}")
+	//TODO remove update case as its the only case
+	switch strings.ToLower(action) {
+	case "update":
+		if user.EmployeeID < 1 {
+			return errors.New("Required employeeID")
+		}
+		if user.Name == "" {
+			return errors.New("Required name")
+		}
+		if user.Email == "" {
+			return errors.New("Required email")
+		}
+		if err := checkmail.ValidateFormat(user.Email); err != nil {
+			return errors.New("Invalid email")
+		}
+		if user.Phone == "" {
+			return errors.New("Required phone")
+		}
+		if !pinValidationRegex.MatchString((user.Pin)) {
+			return errors.New("Invalid pin")
+		}
+		if user.Balance < 0 {
+			return errors.New("Insufficient funds")
+		}
+		if !cardIDValidationRegex.MatchString(user.CardID) {
+			return errors.New("Invalid cardID")
+		}
+	}
+	return nil
+}
 func (s UserService) mapCreateUserToUser(createUser Models.CreateUser) Models.User {
 	user := Models.User{
 		EmployeeID: createUser.EmployeeID,

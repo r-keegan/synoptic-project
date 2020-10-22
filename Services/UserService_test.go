@@ -46,6 +46,16 @@ var _ = Describe("UserService", func() {
 			Expect(err).ShouldNot(HaveOccurred())
 		})
 
+		It("throws error when there attempts create the same user twice", func() {
+			user := getUserOne()
+
+			err := userService.CreateUser(user)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			err = userService.CreateUser(user)
+			Expect(err).Should(HaveOccurred())
+		})
+
 		It("throws error when employeeID missing", func() {
 			invalidUser := Models.CreateUser{
 				Name: "Max Power",
@@ -68,7 +78,7 @@ var _ = Describe("UserService", func() {
 		})
 
 		It("throws error when email missing", func() {
-			invalidUser := Models.User{
+			invalidUser := Models.CreateUser{
 				EmployeeID: 1,
 				Name:       "Max Power",
 				Email:      "",
@@ -76,13 +86,13 @@ var _ = Describe("UserService", func() {
 				Pin:        "1234",
 			}
 
-			err := userService.Validate(invalidUser, "update")
+			err := userService.CreateUser(invalidUser)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(MatchError(ContainSubstring("Required email")))
 		})
 
 		It("throws error when email is invalid", func() {
-			invalidUser := Models.User{
+			invalidUser := Models.CreateUser{
 				EmployeeID: 1,
 				Name:       "Max Power",
 				Email:      "max.powergmail.com",
@@ -90,13 +100,13 @@ var _ = Describe("UserService", func() {
 				Pin:        "1234",
 			}
 
-			err := userService.Validate(invalidUser, "update")
+			err := userService.CreateUser(invalidUser)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(MatchError(ContainSubstring("Invalid email")))
 		})
 
 		It("throws error when phone is missing", func() {
-			invalidUser := Models.User{
+			invalidUser := Models.CreateUser{
 				EmployeeID: 1,
 				Name:       "Max Power",
 				Email:      "max.power@gmail.com",
@@ -104,13 +114,13 @@ var _ = Describe("UserService", func() {
 				Pin:        "1234",
 			}
 
-			err := userService.Validate(invalidUser, "update")
+			err := userService.CreateUser(invalidUser)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(MatchError(ContainSubstring("Required phone")))
 		})
 
 		It("throws error when pin does not contain four numbers", func() {
-			invalidUser := Models.User{
+			invalidUser := Models.CreateUser{
 				EmployeeID: 1,
 				Name:       "Max Power",
 				Email:      "max.power@gmail.com",
@@ -118,13 +128,13 @@ var _ = Describe("UserService", func() {
 				Pin:        "06",
 			}
 
-			err := userService.Validate(invalidUser, "update")
+			err := userService.CreateUser(invalidUser)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(MatchError(ContainSubstring("Invalid pin")))
 		})
 
 		It("throws error when pin does not contain four numbers", func() {
-			invalidUser := Models.User{
+			invalidUser := Models.CreateUser{
 				EmployeeID: 1,
 				Name:       "Max Power",
 				Email:      "max.power@gmail.com",
@@ -132,13 +142,13 @@ var _ = Describe("UserService", func() {
 				Pin:        "06ab",
 			}
 
-			err := userService.Validate(invalidUser, "update")
+			err := userService.CreateUser(invalidUser)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(MatchError(ContainSubstring("Invalid pin")))
 		})
 
 		It("throws error cardID is not 16 characters long", func() {
-			invalidUser := Models.User{
+			invalidUser := Models.CreateUser{
 				EmployeeID: 1,
 				Name:       "Max Power",
 				Email:      "max.power@gmail.com",
@@ -147,13 +157,13 @@ var _ = Describe("UserService", func() {
 				CardID:     "123412341234123",
 			}
 
-			err := userService.Validate(invalidUser, "update")
+			err := userService.CreateUser(invalidUser)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(MatchError(ContainSubstring("Invalid cardID")))
 		})
 
 		It("throws error cardID is not alphanumeric long", func() {
-			invalidUser := Models.User{
+			invalidUser := Models.CreateUser{
 				EmployeeID: 1,
 				Name:       "Max Power",
 				Email:      "max.power@gmail.com",
@@ -162,7 +172,7 @@ var _ = Describe("UserService", func() {
 				CardID:     "123412341234123,",
 			}
 
-			err := userService.Validate(invalidUser, "update")
+			err := userService.CreateUser(invalidUser)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(MatchError(ContainSubstring("Invalid cardID")))
 		})
@@ -174,7 +184,7 @@ var _ = Describe("UserService", func() {
 			err := userService.CreateUser(user)
 			Expect(err).ShouldNot(HaveOccurred())
 
-			user2 := Models.User{
+			userUpdatedDetails := Models.User{
 				EmployeeID: 2,
 				CardID:     "S7jTG7dqBy5wGO4L",
 				Name:       "Max Power",
@@ -183,12 +193,14 @@ var _ = Describe("UserService", func() {
 				Pin:        "5432",
 				Balance:    0,
 			}
-			err = userService.UpdateUser(user2)
+			err = userService.UpdateUser(userUpdatedDetails)
 			Expect(err).ShouldNot(HaveOccurred())
-			//should go back to db and check it saved
+
+			actualResult, _ := userRepository.GetUserByCardID("S7jTG7dqBy5wGO4L")
+			Expect(actualResult.Pin).To(Equal(userUpdatedDetails.Pin))
 		})
 
-		It("throws error when employeeID missing", func() {
+		It("throws error when employeeID is missing", func() {
 			invalidUser := Models.User{
 				Name: "Max Power",
 			}
@@ -198,7 +210,7 @@ var _ = Describe("UserService", func() {
 			Expect(err).To(MatchError(ContainSubstring("Required employeeID")))
 		})
 
-		It("throws error when name missing", func() {
+		It("throws error when name us missing", func() {
 			invalidUser := Models.User{
 				EmployeeID: 1,
 				Name:       "",
