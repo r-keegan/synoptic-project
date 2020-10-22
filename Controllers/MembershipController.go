@@ -5,14 +5,14 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/r-keegan/synoptic-project/Models"
 	"github.com/r-keegan/synoptic-project/Services"
+	"github.com/r-keegan/synoptic-project/Services/Session"
 	"net/http"
 )
 
 type MembershipController struct {
-	UserService Services.UserService
+	UserService    Services.UserService
+	SessionService Session.SessionService
 }
-
-var sessions = make(map[string]bool)
 
 func (c MembershipController) CardPresented(context *gin.Context) {
 	cardID := context.Params.ByName("id")
@@ -42,7 +42,7 @@ func (c MembershipController) UserAuthenticate(context *gin.Context) {
 	authenticationResult := c.UserService.Authenticate(authRequest)
 
 	if authenticationResult {
-		sessions[authRequest.CardID] = true
+		c.SessionService.CreateSession(authRequest.CardID)
 		context.String(http.StatusOK, "Log in successful")
 	} else {
 		context.String(http.StatusOK, "Log in failed")
@@ -51,10 +51,8 @@ func (c MembershipController) UserAuthenticate(context *gin.Context) {
 
 func (c MembershipController) LogOut(context *gin.Context) {
 	cardId := context.Params.ByName("id")
-	// TODO Invalidate session for card
-	//todo create a test that tries to logout using a CardID that has never logged in
-	if sessions[cardId] {
-		sessions[cardId] = false
+	if c.SessionService.HasSession(cardId) {
+		c.SessionService.DestroySession(cardId)
 		context.String(http.StatusOK, "Goodbye")
 	} else {
 		context.String(http.StatusOK, "User does not have a session")

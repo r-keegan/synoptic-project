@@ -126,7 +126,7 @@ func (s UserService) validate(user Models.User, action string) (err error) {
 		if user.Phone == "" {
 			return errors.New("Required phone")
 		}
-		if !pinValidationRegex.MatchString((user.Pin)) {
+		if !pinValidationRegex.MatchString(user.Pin) {
 			return errors.New("Invalid pin")
 		}
 		if user.Balance < 0 {

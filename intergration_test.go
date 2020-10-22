@@ -7,12 +7,14 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/r-keegan/synoptic-project/Config"
 	"github.com/r-keegan/synoptic-project/Models"
 	"github.com/r-keegan/synoptic-project/Repository"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 )
 
 var (
@@ -21,6 +23,7 @@ var (
 	w              *httptest.ResponseRecorder
 	userRepository Repository.UserRepository
 )
+const SessionTimeoutInSeconds = 1
 
 func TestServices(t *testing.T) {
 	RegisterFailHandler(Fail)
@@ -31,6 +34,7 @@ var _ = Describe("Integration test", func() {
 
 	BeforeSuite(func() {
 		GetTestDatabase()
+		Config.MaxSessionLengthInSeconds = SessionTimeoutInSeconds
 		router = SetupRouterWithSuppliedDB(db)
 	})
 
@@ -113,6 +117,21 @@ var _ = Describe("Integration test", func() {
 			Expect(w2.Body.String()).To(Equal("Goodbye"))
 		})
 
+		It("user attempts to log out when their session has timed out", func() {
+			requestBody := fmt.Sprintf(`{"cardID":"%s","pin":"%s"}`, existingUser().CardID, existingUser().Pin)
+			req, err := http.NewRequest("GET", "/user/auth", strings.NewReader(requestBody))
+			router.ServeHTTP(w, req)
+			time.Sleep((SessionTimeoutInSeconds + 1) * time.Second) //Wait for session to timeout
+
+			req, err = http.NewRequest("GET", fmt.Sprintf("/logout/%s", existingUser().CardID), nil)
+			w2 := httptest.NewRecorder()
+			router.ServeHTTP(w2, req)
+
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(w2.Code).To(Equal(200))
+			Expect(w2.Body.String()).To(Equal("User does not have a session"))
+		})
+
 		It("user attempts to log out when they do not have a session", func() {
 			req, err := http.NewRequest("GET", fmt.Sprintf("/logout/%s", existingUser().CardID), nil)
 			router.ServeHTTP(w, req)
@@ -172,7 +191,7 @@ var _ = Describe("Integration test", func() {
 			// existing user already has a balance of 100
 			requestBody := fmt.Sprintf(`{"cardID":"%s","pin":"%s", "amount":100}`, existingUser().CardID, existingUser().Pin)
 			//goland:noinspection ALL
-			req, err := http.NewRequest("GET", "/topup", strings.NewReader(requestBody))
+			req, err := http.NewRequest("PUT", "/topup", strings.NewReader(requestBody))
 			router.ServeHTTP(w, req)
 
 			Expect(err).ShouldNot(HaveOccurred())
@@ -183,7 +202,7 @@ var _ = Describe("Integration test", func() {
 		It("responds with an error, when unable to topup", func() {
 			nonExistantCardID := existingUser().CardID
 			requestBody := fmt.Sprintf(`{"cardID":"%s","pin":"%s", "amount":1}`, nonExistantCardID, existingUser().Pin+"2")
-			req, err := http.NewRequest("GET", "/topup", strings.NewReader(requestBody))
+			req, err := http.NewRequest("PUT", "/topup", strings.NewReader(requestBody))
 			router.ServeHTTP(w, req)
 
 			Expect(err).ToNot(HaveOccurred())
@@ -195,7 +214,7 @@ var _ = Describe("Integration test", func() {
 	Context("Purchase", func() {
 		It("responds with 200 and informs user of their balance", func() {
 			requestBody := fmt.Sprintf(`{"cardID":"%s","pin":"%s", "amount":100}`, existingUser().CardID, existingUser().Pin)
-			req, err := http.NewRequest("GET", "/purchase", strings.NewReader(requestBody))
+			req, err := http.NewRequest("PUT", "/purchase", strings.NewReader(requestBody))
 			router.ServeHTTP(w, req)
 
 			Expect(err).ShouldNot(HaveOccurred())
@@ -205,7 +224,7 @@ var _ = Describe("Integration test", func() {
 
 		It("responds with an error, when purchase is greater than their existing balance", func() {
 			requestBody := fmt.Sprintf(`{"cardID":"%s","pin":"%s", "amount":100000}`, existingUser().CardID, existingUser().Pin)
-			req, err := http.NewRequest("GET", "/purchase", strings.NewReader(requestBody))
+			req, err := http.NewRequest("PUT", "/purchase", strings.NewReader(requestBody))
 			router.ServeHTTP(w, req)
 
 			Expect(err).ShouldNot(HaveOccurred())
