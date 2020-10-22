@@ -6,6 +6,7 @@ import (
 	"github.com/badoux/checkmail"
 	"github.com/r-keegan/synoptic-project/Models"
 	"github.com/r-keegan/synoptic-project/Repository"
+	"regexp"
 	"strings"
 )
 
@@ -30,14 +31,11 @@ func (s UserService) UpdateUser(user Models.User) (err error) {
 }
 
 func (s UserService) Validate(user Models.User, action string) (err error) {
-	//TODO perhaps throw a different exception
-	//r, _ := regexp.Compile("^\\w{16}")
+	// validation for 16 character alphanumeric string
+	r, _ := regexp.Compile("^\\w{16}")
 
 	switch strings.ToLower(action) {
 	case "update":
-		//if !r.MatchString(user.CardID) {
-		//	return errors.New("Invalid cardID")
-		//}
 		if user.EmployeeID < 1 {
 			return errors.New("Required employeeID")
 		}
@@ -58,6 +56,9 @@ func (s UserService) Validate(user Models.User, action string) (err error) {
 		}
 		if user.Balance < 0 {
 			return errors.New("Insufficient funds")
+		}
+		if !r.MatchString(user.CardID) {
+			return errors.New("Invalid cardID")
 		}
 	}
 	return nil

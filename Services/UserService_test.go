@@ -132,7 +132,7 @@ var _ = Describe("UserService", func() {
 
 			user2 := Models.User{
 				EmployeeID: 2,
-				CardID:     "123",
+				CardID:     "S7jTG7dqBy5wGO4L",
 				Name:       "Max Power",
 				Email:      "max.power@gmail.com",
 				Phone:      "09716244907",
@@ -141,6 +141,7 @@ var _ = Describe("UserService", func() {
 			}
 			err = userService.UpdateUser(user2)
 			Expect(err).ShouldNot(HaveOccurred())
+			//should go back to db and check it saved
 		})
 
 		It("throws error when employeeID missing", func() {

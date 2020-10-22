@@ -1,7 +1,6 @@
 package Repository
 
 import (
-	"fmt"
 	"github.com/jinzhu/gorm"
 	"github.com/r-keegan/synoptic-project/Models"
 )
@@ -34,7 +33,6 @@ func (r UserRepository) GetUserByCardID(cardID string) (user Models.User, err er
 
 func (r UserRepository) UpdateUser(user Models.User) (err error) {
 	r.DB.Save(user)
-	fmt.Println(user)
 	return nil
 }
 
