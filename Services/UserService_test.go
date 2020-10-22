@@ -180,24 +180,14 @@ var _ = Describe("UserService", func() {
 
 	Context("Update User", func() {
 		It("successfully updates a user", func() {
-			user := getUserOne()
-			err := userService.CreateUser(user)
+			userUpdate := existingUserWithAPositiveBalance()
+			userUpdate.Phone = userUpdate.Phone + "1"
+
+			err := userService.UpdateUser(userUpdate)
 			Expect(err).ShouldNot(HaveOccurred())
 
-			userUpdatedDetails := Models.User{
-				EmployeeID: 2,
-				CardID:     "S7jTG7dqBy5wGO4L",
-				Name:       "Max Power",
-				Email:      "max.power@gmail.com",
-				Phone:      "09716244907",
-				Pin:        "5432",
-				Balance:    0,
-			}
-			err = userService.UpdateUser(userUpdatedDetails)
-			Expect(err).ShouldNot(HaveOccurred())
-
-			actualResult, _ := userRepository.GetUserByCardID("S7jTG7dqBy5wGO4L")
-			Expect(actualResult.Pin).To(Equal(userUpdatedDetails.Pin))
+			actualResult, _ := userRepository.GetUserByCardID(userUpdate.CardID)
+			Expect(actualResult.Phone).To(Equal(userUpdate.Phone))
 		})
 
 		It("throws error when employeeID is missing", func() {
@@ -486,6 +476,7 @@ func getUserOne() Models.CreateUser {
 
 func existingUserWithAPositiveBalance() Models.User {
 	user := Models.User{
+		ID: 1,
 		EmployeeID: 1,
 		Name:       "Richie Rich",
 		CardID:     "moneymoneymoney1",
