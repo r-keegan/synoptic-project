@@ -66,7 +66,7 @@ func (c MembershipController) LogOut(context *gin.Context) {
 func (c MembershipController) GetBalance(context *gin.Context) {
 	var authRequest Models.AuthenticatedRequest
 	context.BindJSON(&authRequest)
-	balance, err := c.UserService.GetBalance(authRequest.CardID, authRequest.Pin)
+	balance, err := c.UserService.Balance(authRequest.CardID, authRequest.Pin)
 	if err == nil {
 		context.String(http.StatusOK, fmt.Sprintf("Your balance is: %v", balance))
 	} else {

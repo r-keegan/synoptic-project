@@ -143,7 +143,7 @@ var _ = Describe("Intergration test", func() {
 		})
 	})
 
-	Context("GetBalance", func() {
+	Context("Balance", func() {
 		It("responds with 200 and informs user of their balance", func() {
 			requestBody := fmt.Sprintf(`{"cardID":"%s","pin":"%s"}`, existingUser().CardID, existingUser().Pin)
 			req, err := http.NewRequest("GET", "/balance", strings.NewReader(requestBody))
