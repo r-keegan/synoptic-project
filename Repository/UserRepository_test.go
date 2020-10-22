@@ -103,23 +103,6 @@ var _ = Describe("UserRepository", func() {
 			Expect(err2).To(HaveOccurred())
 			Expect(err2).To(MatchError(ContainSubstring("UNIQUE constraint failed: user.card_id")))
 		})
-
-		//It("throws an error when it cardID is not a alphanumeric string", func() {
-		//	user := Models.User{
-		//		EmployeeID: 2,
-		//		CardID:     "bbbb",
-		//		Name:       "Max Power",
-		//		Email:      "max.power@gmail.com",
-		//		Phone:      "09716244907",
-		//		Pin:        "1234",
-		//		ConfirmPin: "1234",
-		//	}
-		//
-		//	err := userRepository.CreateUser(user)
-		//
-		//	Expect(err).To(HaveOccurred())
-		//	Expect(err).To(MatchError(ContainSubstring("UNIQUE constraint failed: user.card_id")))
-		//})
 	})
 
 	Context("Get User", func() {
@@ -284,7 +267,6 @@ func getUserTwo() Models.User {
 }
 
 //Test Helpers
-//TODO investigate using assert.Contains(t, foundUsers, user1, user2) instead of two asserts that implicity check ordering
 func compare(expectedUser Models.User, actualUser Models.User) {
 	Expect(actualUser.EmployeeID).To(Equal(expectedUser.EmployeeID))
 	Expect(actualUser.Name).To(Equal(expectedUser.Name))

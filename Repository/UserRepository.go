@@ -9,7 +9,6 @@ type UserRepository struct {
 	DB *gorm.DB
 }
 
-// TODO return user and an error
 func (r UserRepository) CreateUser(user Models.User) (err error) {
 	if err = r.DB.Create(&user).Error; err != nil {
 		return err

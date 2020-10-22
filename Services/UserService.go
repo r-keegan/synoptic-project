@@ -32,7 +32,9 @@ func (s UserService) UpdateUser(user Models.User) (err error) {
 
 func (s UserService) Validate(user Models.User, action string) (err error) {
 	// validation for 16 character alphanumeric string
-	r, _ := regexp.Compile("^\\w{16}")
+	cardIDValidationRegex, _ := regexp.Compile("^\\w{16}")
+	//Validation for 4 digits
+	pinValidationRegex, _ := regexp.Compile("^\\d{4}")
 
 	switch strings.ToLower(action) {
 	case "update":
@@ -51,13 +53,13 @@ func (s UserService) Validate(user Models.User, action string) (err error) {
 		if user.Phone == "" {
 			return errors.New("Required phone")
 		}
-		if !(len(user.Pin) == 4) {
+		if !pinValidationRegex.MatchString((user.Pin)) {
 			return errors.New("Invalid pin")
 		}
 		if user.Balance < 0 {
 			return errors.New("Insufficient funds")
 		}
-		if !r.MatchString(user.CardID) {
+		if !cardIDValidationRegex.MatchString(user.CardID) {
 			return errors.New("Invalid cardID")
 		}
 	}
@@ -114,6 +116,7 @@ func (s UserService) TopUp(cardID string, pin string, amount int) (int, error) {
 			return user.Balance, nil
 		}
 	}
+	//goland:noinspection GoNilness
 	return user.Balance, errors.New(fmt.Sprintf("Unable to topup: your balance is %v", user.Balance))
 }
 

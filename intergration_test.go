@@ -27,7 +27,8 @@ func TestServices(t *testing.T) {
 	RunSpecs(t, "Services Suite")
 }
 
-var _ = Describe("Intergration test", func() {
+//goland:noinspection ALL
+var _ = Describe("Integration test", func() {
 
 	BeforeSuite(func() {
 		GetTestDatabase()
@@ -40,7 +41,7 @@ var _ = Describe("Intergration test", func() {
 		db.AutoMigrate(&Models.User{})
 
 		userRepository = Repository.UserRepository{DB: db}
-		userRepository.CreateUser(existingUser())
+		_ = userRepository.CreateUser(existingUser())
 		w = httptest.NewRecorder()
 
 	})
@@ -83,10 +84,12 @@ var _ = Describe("Intergration test", func() {
 
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(w.Code).To(Equal(200))
+			//goland:noinspection SpellCheckingInspection
 			Expect(w.Body.String()).To(Equal("Welcome Maxeen Power"))
 		})
 
 		It("responds with an error, unable to register card", func() {
+			//goland:noinspection SpellCheckingInspection
 			req, err := http.NewRequest("GET", "/cardPresented/nocard", nil)
 			router.ServeHTTP(w, req)
 
@@ -169,6 +172,7 @@ var _ = Describe("Intergration test", func() {
 		It("responds with 200 when user tops up and informs user of their balance", func() {
 			// existing user already has a balance of 100
 			requestBody := fmt.Sprintf(`{"cardID":"%s","pin":"%s", "amount":100}`, existingUser().CardID, existingUser().Pin)
+			//goland:noinspection ALL
 			req, err := http.NewRequest("GET", "/topup", strings.NewReader(requestBody))
 			router.ServeHTTP(w, req)
 
@@ -293,18 +297,6 @@ func GetTestDatabase() {
 	if err != nil {
 		fmt.Println("Failed to connect to database: ", err)
 	}
-}
-
-func newUser() Models.User {
-	user := Models.User{
-		EmployeeID: 2,
-		CardID:     "r7jTG7dqBy5wGO4L",
-		Name:       "Max Power",
-		Email:      "max.power@gmail.com",
-		Phone:      "09716244907",
-		Pin:        "1234",
-	}
-	return user
 }
 
 func existingUser() Models.User {

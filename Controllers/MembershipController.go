@@ -12,7 +12,7 @@ type MembershipController struct {
 	UserService Services.UserService
 }
 
-var sessions map[string]bool = make(map[string]bool)
+var sessions = make(map[string]bool)
 
 func (c MembershipController) CardPresented(context *gin.Context) {
 	cardID := context.Params.ByName("id")
@@ -27,7 +27,7 @@ func (c MembershipController) CardPresented(context *gin.Context) {
 
 func (c MembershipController) CreateUser(context *gin.Context) {
 	var createUser Models.CreateUser
-	context.BindJSON(&createUser)
+	_ = context.BindJSON(&createUser)
 	err := c.UserService.CreateUser(createUser)
 	if err != nil {
 		context.String(http.StatusOK, fmt.Sprintf("Unable to create user: %v", err))
@@ -36,14 +36,12 @@ func (c MembershipController) CreateUser(context *gin.Context) {
 	}
 }
 
-// TODO store logged-in somewhere eg: session
 func (c MembershipController) UserAuthenticate(context *gin.Context) {
 	var authRequest Models.AuthenticatedRequest
-	context.BindJSON(&authRequest)
+	_ = context.BindJSON(&authRequest)
 	authenticationResult := c.UserService.Authenticate(authRequest)
 
 	if authenticationResult {
-		//c.sessionsAsString = append(c.sessionsAsString, authRequest.CardID)
 		sessions[authRequest.CardID] = true
 		context.String(http.StatusOK, "Log in successful")
 	} else {
@@ -54,7 +52,7 @@ func (c MembershipController) UserAuthenticate(context *gin.Context) {
 func (c MembershipController) LogOut(context *gin.Context) {
 	cardId := context.Params.ByName("id")
 	// TODO Invalidate session for card
-	//todo create a test that tries to logout using a cardid that has never logged in
+	//todo create a test that tries to logout using a CardID that has never logged in
 	if sessions[cardId] {
 		sessions[cardId] = false
 		context.String(http.StatusOK, "Goodbye")
@@ -65,7 +63,7 @@ func (c MembershipController) LogOut(context *gin.Context) {
 
 func (c MembershipController) GetBalance(context *gin.Context) {
 	var authRequest Models.AuthenticatedRequest
-	context.BindJSON(&authRequest)
+	_ = context.BindJSON(&authRequest)
 	balance, err := c.UserService.Balance(authRequest.CardID, authRequest.Pin)
 	if err == nil {
 		context.String(http.StatusOK, fmt.Sprintf("Your balance is: %v", balance))
@@ -76,7 +74,7 @@ func (c MembershipController) GetBalance(context *gin.Context) {
 
 func (c MembershipController) Purchase(context *gin.Context) {
 	var purchaseRequest Models.PurchaseRequest
-	context.BindJSON(&purchaseRequest)
+	_ = context.BindJSON(&purchaseRequest)
 	balance, err := c.UserService.Purchase(purchaseRequest.CardID, purchaseRequest.Pin, purchaseRequest.Amount)
 	if err == nil {
 		context.String(http.StatusOK, fmt.Sprintf("Your balance is: %v", balance))
@@ -87,7 +85,7 @@ func (c MembershipController) Purchase(context *gin.Context) {
 
 func (c MembershipController) TopUp(context *gin.Context) {
 	var topUpRequest Models.TopUpRequest
-	context.BindJSON(&topUpRequest)
+	_ = context.BindJSON(&topUpRequest)
 	balance, err := c.UserService.TopUp(topUpRequest.CardID, topUpRequest.Pin, topUpRequest.Amount)
 	if err == nil {
 		context.String(http.StatusOK, fmt.Sprintf("Your balance is: %v", balance))

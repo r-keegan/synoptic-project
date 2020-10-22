@@ -31,7 +31,7 @@ var _ = Describe("UserService", func() {
 		// set up user service
 		userRepository = Repository.UserRepository{DB: db}
 		userService = UserService{UserRepository: userRepository}
-		userRepository.CreateUser(existingUserWithAPositiveBalance())
+		_ = userRepository.CreateUser(existingUserWithAPositiveBalance())
 	})
 
 	AfterEach(func() {
@@ -121,6 +121,50 @@ var _ = Describe("UserService", func() {
 			err := userService.Validate(invalidUser, "update")
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(MatchError(ContainSubstring("Invalid pin")))
+		})
+
+		It("throws error when pin does not contain four numbers", func() {
+			invalidUser := Models.User{
+				EmployeeID: 1,
+				Name:       "Max Power",
+				Email:      "max.power@gmail.com",
+				Phone:      "09716244907",
+				Pin:        "06ab",
+			}
+
+			err := userService.Validate(invalidUser, "update")
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError(ContainSubstring("Invalid pin")))
+		})
+
+		It("throws error cardID is not 16 characters long", func() {
+			invalidUser := Models.User{
+				EmployeeID: 1,
+				Name:       "Max Power",
+				Email:      "max.power@gmail.com",
+				Phone:      "09716244907",
+				Pin:        "2344",
+				CardID:     "123412341234123",
+			}
+
+			err := userService.Validate(invalidUser, "update")
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError(ContainSubstring("Invalid cardID")))
+		})
+
+		It("throws error cardID is not alphanumeric long", func() {
+			invalidUser := Models.User{
+				EmployeeID: 1,
+				Name:       "Max Power",
+				Email:      "max.power@gmail.com",
+				Phone:      "09716244907",
+				Pin:        "2344",
+				CardID:     "123412341234123,",
+			}
+
+			err := userService.Validate(invalidUser, "update")
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError(ContainSubstring("Invalid cardID")))
 		})
 	})
 
@@ -246,7 +290,7 @@ var _ = Describe("UserService", func() {
 			actualUser, err := userService.GetEmployeeByCardID(user.CardID)
 
 			Expect(err).ShouldNot(HaveOccurred())
-			compareCreateUsertoUser(user, actualUser)
+			compareCreateUserToUser(user, actualUser)
 		})
 	})
 
@@ -441,27 +485,7 @@ func existingUserWithAPositiveBalance() Models.User {
 	return user
 }
 
-func getUserTwo() Models.User {
-	user := Models.User{
-		EmployeeID: 4,
-		Name:       "Maxeen Power",
-		CardID:     "27jTG7dqBy5wGO4L",
-		Email:      "maxeen.power@gmail.com",
-		Phone:      "09716244907",
-		Pin:        "1234",
-		Balance:    0,
-	}
-	return user
-}
-
-func compareUsertoUser(expectedUser Models.User, actualUser Models.User) {
-	Expect(actualUser.EmployeeID).To(Equal(expectedUser.EmployeeID))
-	Expect(actualUser.Name).To(Equal(expectedUser.Name))
-	Expect(actualUser.Phone).To(Equal(expectedUser.Phone))
-	Expect(actualUser.Pin).To(Equal(expectedUser.Pin))
-}
-
-func compareCreateUsertoUser(expectedUser Models.CreateUser, actualUser Models.User) {
+func compareCreateUserToUser(expectedUser Models.CreateUser, actualUser Models.User) {
 	Expect(actualUser.EmployeeID).To(Equal(expectedUser.EmployeeID))
 	Expect(actualUser.Name).To(Equal(expectedUser.Name))
 	Expect(actualUser.Phone).To(Equal(expectedUser.Phone))
