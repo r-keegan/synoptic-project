@@ -18,7 +18,7 @@ var userService UserService
 
 func TestServices(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Services Suite")
+	RunSpecs(t, "User Services Suite")
 }
 
 var _ = Describe("UserService", func() {
@@ -476,7 +476,7 @@ func getUserOne() Models.CreateUser {
 
 func existingUserWithAPositiveBalance() Models.User {
 	user := Models.User{
-		ID: 1,
+		ID:         1,
 		EmployeeID: 1,
 		Name:       "Richie Rich",
 		CardID:     "moneymoneymoney1",

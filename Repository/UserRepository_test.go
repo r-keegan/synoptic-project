@@ -16,7 +16,7 @@ var userRepository UserRepository
 
 func TestUserRepository(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "User Service Suite")
+	RunSpecs(t, "User Repository Suite")
 }
 
 var _ = Describe("UserRepository", func() {

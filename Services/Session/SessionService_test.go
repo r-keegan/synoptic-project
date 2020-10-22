@@ -13,7 +13,7 @@ var sessionService Session.SessionService
 
 func TestSessionService(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Services Suite")
+	RunSpecs(t, "Session Services Suite")
 }
 
 var _ = Describe("UserService", func() {
@@ -23,10 +23,9 @@ var _ = Describe("UserService", func() {
 	})
 
 	Context("Create Session", func() {
-
 		const cardId = "123"
 
-		It("Can create session", func() {
+		It("can create a session", func() {
 			sessionService.CreateSession(cardId)
 
 			Expect(sessionService.HasSession(cardId)).To(Equal(true))

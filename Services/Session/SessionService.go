@@ -8,15 +8,15 @@ type SessionService struct {
 	MaxSessionLengthInSeconds int
 }
 
-var sessionTimer = make(map[string] time.Time)
+var sessionTimer = make(map[string]time.Time)
 
 func (s SessionService) HasSession(cardId string) bool {
 	currentTime := time.Now()
-	if timeSessionCreated, sessionExists := sessionTimer[cardId]; sessionExists {
-		durationOfSession := currentTime.Sub(timeSessionCreated)
-		if int(durationOfSession.Seconds()) < s.MaxSessionLengthInSeconds {
+	if timeSessionCreated, sessionExists := sessionTimer[cardId]; sessionExists { //if a session with a time is in the map
+		durationOfSession := currentTime.Sub(timeSessionCreated)            //Calculate length of time since session creation
+		if int(durationOfSession.Seconds()) < s.MaxSessionLengthInSeconds { // if the session was created within the timeout period
 			return true
-		}else{
+		} else { // if the session was created over the timeout period long ago then destroy it
 			s.DestroySession(cardId)
 		}
 	}
@@ -28,7 +28,5 @@ func (s SessionService) CreateSession(cardId string) {
 }
 
 func (s SessionService) DestroySession(cardId string) {
-	delete (sessionTimer, cardId)
+	delete(sessionTimer, cardId)
 }
-
-

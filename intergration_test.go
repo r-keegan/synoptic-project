@@ -23,11 +23,12 @@ var (
 	w              *httptest.ResponseRecorder
 	userRepository Repository.UserRepository
 )
+
 const SessionTimeoutInSeconds = 1
 
 func TestServices(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Services Suite")
+	RunSpecs(t, "Integration Services Suite")
 }
 
 var _ = Describe("Integration test", func() {
