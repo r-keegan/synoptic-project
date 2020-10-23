@@ -59,7 +59,7 @@ curl --location --request GET 'http://localhost:8080/user/auth' \
 TopUp
 curl --location --request PUT 'http://localhost:8080/topup' \
 --header 'Content-Type: application/json' \
---data-raw '{"cardID":"123b567c91B234b6","pin":"1234","amount":50}
+--data-raw '{"cardID":"123b567c91B234b6","pin":"1234","amount":50}'
  
 View Balance
 curl --location --request GET 'http://localhost:8080/balance' \
@@ -69,7 +69,7 @@ curl --location --request GET 'http://localhost:8080/balance' \
 Make Purchase
 curl --location --request PUT 'http://localhost:8080/purchase' \
 --header 'Content-Type: application/json' \
---data-raw '{"cardID":"123b567c91B234b6","pin":"1234","amount":45}
+--data-raw '{"cardID":"123b567c91B234b6","pin":"1234","amount":45}'
  
 Logout
 curl --location --request GET 'http://localhost:8080/logout/123b567c91B234b6'
