@@ -14,7 +14,7 @@ OR you can run these commands:
 In the root directory run the command in terminal: `ginkgo -r`
 	
 
-To quick start the application, there is a prebuilt binary titled main that can be run:
+To quick start the application, in the terminal:
 
 `go run main.go`
 
