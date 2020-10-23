@@ -81,13 +81,15 @@ Unhappy path tests are also covered in unit and integration tests.
 
 Refer to the Route Path document or Test Plan for error messages.
 
+If you want to go back to an initial state - delete the main.db inside the synoptic-project source code. It can be safely deleted.
+
 To run the tests there are multiple options:
 
 To run all tests, from your root directory in the terminal, type: `go test ./..`
 
 In your terminal, cd into the directory you wish to test: ie: `cd Repository`
 Next, in your terminal, type: `go test`
-
+__
 OR  you can run these commands: 
 
     `go get -u github.com/onsi/ginkgo/ginkgo`
